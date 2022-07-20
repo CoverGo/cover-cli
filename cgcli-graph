@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander')
+
+const program = new Command()
+
+program.command('export', 'export bulk data from various domains')
+program.command('import', 'import bulk data to various domains')
+
+program.parse()

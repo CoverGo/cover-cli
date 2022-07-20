@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander');
+const program = new Command();
+
+program
+	.name('cover-cli')
+	.description('Small utility scripts for interacting with the covergo platform.')
+	.version('0.0.1')
+	.command('graph', 'interact with the graph API')
+
+program.parse()

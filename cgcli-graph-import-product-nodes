@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander')
+const program = new Command()
+
+program.command('product-nodes', 'import product nodes')
+	.requiredOption('-t, --token <api token>', 'api token to use for request')
+	.requiredOption('-e, --endpoint <api endpoint>', 'api token to use for request')
+	.argument('<types>', 'JSON string representing nodes to import from exported file')
+	.action(async (nodes, options) => {
+		const { importNodes } = await import("./graph/import.mjs");
+		await importNodes(JSON.parse(nodes), options.token, options.endpoint)
+	})
+
+program.parse()

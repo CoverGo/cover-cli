@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander')
+const program = new Command()
+
+program.command('product-nodes', 'export a subtree of nodeId')
+	.requiredOption('-t, --token <api token>', 'api token to use for request')
+	.requiredOption('-e, --endpoint <api endpoint>', 'api token to use for request')
+	.argument('<nodeId>', 'the root node you want to export')
+	.action(async (nodeId, options) => {
+		const { exportProductBuilderTree } = await import("./graph/export.mjs");
+		await exportProductBuilderTree(nodeId, options)
+	})
+
+program.parse()

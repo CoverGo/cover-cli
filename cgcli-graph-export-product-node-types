@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander')
+const program = new Command()
+
+program.command('product-node-types', 'export product node types')
+	.requiredOption('-t, --token <api token>', 'api token to use for request')
+	.requiredOption('-e, --endpoint <api endpoint>', 'api token to use for request')
+	.action(async (options) => {
+		const { exportProductBuilderTypes } = await import("./graph/export.mjs");
+		await exportProductBuilderTypes(options)
+	})
+
+program.parse()
