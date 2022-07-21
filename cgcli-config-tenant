@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+const { Command } = require('commander')
+const program = new Command()
+
+program
+	.command('create', 'configure a new tenant')
+	.command('info', 'show stored information about tenant')
+
+program.parse()

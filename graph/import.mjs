@@ -150,6 +150,8 @@ async function executeQueries(queries = [], token, endpoint) {
 export async function importTypes(types, token, endpoint) {
 	const converted = generateTypeQueries(types)
 	await executeQueries(converted, token, endpoint)
+
+	console.log("Import complete!")
 }
 
 export async function importNodes(nodes, token, endpoint) {
