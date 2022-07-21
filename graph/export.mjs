@@ -1,10 +1,7 @@
 import { gql } from "graphql-request";
 import axios from "axios";
 
-export async function exportProductBuilderTree(nodeId, options) {
-	const token = options.token
-	const endpoint = options.endpoint
-
+export async function exportProductBuilderTree(nodeId, token, endpoint) {
 	const query = gql`
 		query listNodes($parentNodeId: ID!) {
 			listNodes(parentNodeId: $parentNodeId) {
@@ -47,17 +44,14 @@ export async function exportProductBuilderTree(nodeId, options) {
 			data: graphqlQuery
 		})
 
-		console.log(JSON.stringify(response.data.data.listNodes))
+		return response.data.data.listNodes
 	}
 	catch (e) {
 		console.error(e)
 	}
 }
 
-export async function exportProductBuilderTypes(options) {
-	const token = options.token
-	const endpoint = options.endpoint
-
+export async function exportProductBuilderTypes(token, endpoint) {
 	const query = gql`
 		query {
 			nodeTypes {
@@ -96,9 +90,9 @@ export async function exportProductBuilderTypes(options) {
 			method: 'post',
 			headers: headers,
 			data: graphqlQuery
-		});
+		})
 
-		console.log(JSON.stringify(response.data.data.nodeTypes))
+		return response.data.data.nodeTypes
 	}
 	catch (e) {
 		console.error(e)

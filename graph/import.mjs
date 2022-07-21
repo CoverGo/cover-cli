@@ -113,22 +113,18 @@ async function executeMutation(query, token, endpoint, reties = 10) {
 			query,
 		}
 
-		try {
-			const response = await axios({
-				url: endpoint,
-				method: 'post',
-				headers: headers,
-				data: graphqlQuery
-			})
+		const response = await axios({
+			url: endpoint,
+			method: 'post',
+			headers: headers,
+			data: graphqlQuery
+		})
 
-			if (response.data.errors) {
-				console.error('Error! Retrying...')
-				reties--
-			} else {
-				return
-			}
-		} catch (e) {
-			throw new Error('Failed to import')
+		if (response.data.errors) {
+			console.error('Error! Retrying...')
+			reties--
+		} else {
+			return
 		}
 	}
 
@@ -139,7 +135,7 @@ async function executeQueries(queries = [], token, endpoint) {
 	console.log(`Executing ${queries.length} queries...`)
 	let number = 1
 	for (const query of queries) {
-		console.log(`${(number / queries.length) * 100}%`)
+		console.log(`${((number / queries.length) * 100).toFixed(2)}%`)
 		await executeMutation(query, token, endpoint)
 		await sleep(400)
 		number++
@@ -150,14 +146,11 @@ async function executeQueries(queries = [], token, endpoint) {
 export async function importTypes(types, token, endpoint) {
 	const converted = generateTypeQueries(types)
 	await executeQueries(converted, token, endpoint)
-
-	console.log("Import complete!")
 }
 
 export async function importNodes(nodes, token, endpoint) {
 	const { rootNode, generated } = generateNodeQueries(nodes)
 	await executeQueries(generated, token, endpoint)
 
-	console.log("Import complete!")
-	console.log(`root node: ${rootNode}`)
+	return rootNode
 }

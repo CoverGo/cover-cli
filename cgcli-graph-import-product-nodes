@@ -4,12 +4,16 @@ const { Command } = require('commander')
 const program = new Command()
 
 program.command('product-nodes', 'import product nodes')
-	.requiredOption('-t, --token <api token>', 'api token to use for request')
-	.requiredOption('-e, --endpoint <api endpoint>', 'api token to use for request')
+	.argument('<tenant alias>', 'alias of a tenant configured with `cgcli config tenant create`')
 	.argument('<types>', 'JSON string representing nodes to import from exported file')
-	.action(async (nodes, options) => {
+	.action(async (name, nodes) => {
+		const { getConfig } = await import("./tenant/config.mjs")
 		const { importNodes } = await import("./graph/import.mjs");
-		await importNodes(JSON.parse(nodes), options.token, options.endpoint)
+		const config = await getConfig(name)
+		const rootNode = await importNodes(JSON.parse(nodes), config.TOKEN, config.ENDPOINT)
+
+		console.log("Import complete!")
+		console.log(`New imported root node: ${rootNode}`)
 	})
 
 program.parse()

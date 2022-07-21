@@ -4,11 +4,13 @@ const { Command } = require('commander')
 const program = new Command()
 
 program.command('product-node-types', 'export product node types')
-	.requiredOption('-t, --token <api token>', 'api token to use for request')
-	.requiredOption('-e, --endpoint <api endpoint>', 'api token to use for request')
-	.action(async (options) => {
-		const { exportProductBuilderTypes } = await import("./graph/export.mjs");
-		await exportProductBuilderTypes(options)
+	.argument('<tenant alias>', 'alias of a tenant configured with `cgcli config tenant create`')
+	.action(async (name) => {
+		const { getConfig } = await import("./tenant/config.mjs")
+		const config = await getConfig(name)
+		const { exportProductBuilderTypes } = await import("./graph/export.mjs")
+		const result = await exportProductBuilderTypes(config.TOKEN, config.ENDPOINT)
+		console.log(JSON.stringify(result))
 	})
 
 program.parse()
