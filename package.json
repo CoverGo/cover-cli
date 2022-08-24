@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "repository": "https://github.com/CoverGo/cover-cli",
   "dependencies": {
     "axios": "^0.27.2",
     "commander": "^9.4.0",
