@@ -13,7 +13,7 @@ jobs:
       - name: Setup node and registry url
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 17
           registry-url: https://npm.pkg.github.com/
           scope: "@CoverGo"
 
