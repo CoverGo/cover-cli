@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import {getConfigForTenant} from "./file.mjs";
-import {gql} from "graphql-request";
+import gql from "graphql-tag";
 import axios from "axios";
 
 class ConfigNotExistsError extends Error {

@@ -1,5 +1,5 @@
-import { gql } from "graphql-request";
-import axios from "axios";
+import gql from "graphql-tag"
+import axios from "axios"
 
 export async function exportProductBuilderTree(nodeId, token, endpoint) {
 	const query = gql`
