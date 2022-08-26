@@ -1,6 +1,5 @@
 import axios from "axios"
 import gql from "graphql-tag"
-import { print } from "graphql"
 
 function generateTypeQueries(types) {
 	return types.map(type => {
@@ -110,7 +109,7 @@ async function executeMutation(query, token, endpoint, reties = 10) {
 		const response = await axios.post(
 			endpoint,
 			{
-				query: print(graphqlQuery)
+				query: query
 			},
 			{
 				headers: {
