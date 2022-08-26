@@ -1,4 +1,5 @@
 import gql from "graphql-tag"
+import { print } from "graphql"
 import axios from "axios"
 
 export async function exportProductBuilderTree(nodeId, token, endpoint) {
@@ -25,24 +26,21 @@ export async function exportProductBuilderTree(nodeId, token, endpoint) {
 		}
 	`
 
-	const headers = {
-		Authorization: `Bearer ${token}`,
-	}
-
 	try {
-		const graphqlQuery = {
-			query,
-			variables: {
-				parentNodeId: nodeId
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables: {
+					parentNodeId: nodeId
+				}
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
 			}
-		}
-
-		const response = await axios({
-			url: endpoint,
-			method: 'post',
-			headers: headers,
-			data: graphqlQuery
-		})
+		)
 
 		return response.data.data.listNodes
 	}
@@ -75,26 +73,21 @@ export async function exportProductBuilderTypes(token, endpoint) {
 		}
 	`
 
-	const headers = {
-		Authorization: `Bearer ${token}`,
-	}
-
 	try {
-		const graphqlQuery = {
-			query,
-			variables: {}
-		};
-
-		const response = await axios({
-			url: endpoint,
-			method: 'post',
-			headers: headers,
-			data: graphqlQuery
-		})
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query)
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
+			}
+		)
 
 		return response.data.data.nodeTypes
-	}
-	catch (e) {
+	} catch (e) {
 		console.error(e)
 	}
 }

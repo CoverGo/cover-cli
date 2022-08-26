@@ -1,9 +1,11 @@
 import axios from "axios"
+import gql from "graphql-tag"
+import { print } from "graphql"
 
 function generateTypeQueries(types) {
 	return types.map(type => {
 		const fields = type.fields ? type.fields : []
-		return `mutation importType {
+		return gql`mutation importType {
 			defineNodeType(typeName: "${type.type}", fields: [
 				${fields.map(field => {
 					let resolver = null
@@ -104,21 +106,18 @@ async function sleep(ms) {
 }
 
 async function executeMutation(query, token, endpoint, reties = 10) {
-	const headers = {
-		Authorization: `Bearer ${token}`,
-	}
-
 	while (reties > 0) {
-		const graphqlQuery = {
-			query,
-		}
-
-		const response = await axios({
-			url: endpoint,
-			method: 'post',
-			headers: headers,
-			data: graphqlQuery
-		})
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(graphqlQuery)
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
+			}
+		)
 
 		if (response.data.errors) {
 			console.error('Error! Retrying...')

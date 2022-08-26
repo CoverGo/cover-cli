@@ -1,7 +1,8 @@
-import * as fs from 'node:fs/promises';
-import {getConfigForTenant} from "./file.mjs";
-import gql from "graphql-tag";
-import axios from "axios";
+import * as fs from 'node:fs/promises'
+import { getConfigForTenant } from "./file.mjs"
+import gql from "graphql-tag"
+import { print } from "graphql"
+import axios from "axios"
 
 class ConfigNotExistsError extends Error {
 	constructor(alias, path) {
@@ -56,21 +57,18 @@ export async function fetchNewToken(name) {
 	`
 
 	try {
-		const graphqlQuery = {
-			query,
-			variables: {
-				tenantId: config.TENANT_ID,
-				clientId: config.CLIENT_ID,
-				username: config.USERNAME,
-				password: config.PASSWORD
+		const response = await axios.post(
+			config.ENDPOINT, 
+			{
+				query: print(query),
+				variables: {
+					tenantId: config.TENANT_ID,
+					clientId: config.CLIENT_ID,
+					username: config.USERNAME,
+					password: config.PASSWORD
+				}
 			}
-		}
-
-		const response = await axios({
-			url: config.ENDPOINT,
-			method: 'post',
-			data: graphqlQuery
-		})
+		)
 
 		return response.data.data.token_2.accessToken
 	}
