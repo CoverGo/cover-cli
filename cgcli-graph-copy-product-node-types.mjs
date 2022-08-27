@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 
-const { Command } = require('commander')
+import { Command } from 'commander'
 const program = new Command()
 
 program.command('product-node-types', 'copy node types from source to target tenant')

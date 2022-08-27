@@ -1,5 +1,4 @@
 import axios from "axios"
-import gql from "graphql-tag"
 
 function generateTypeQueries(types) {
 	return types.map(type => {
@@ -78,7 +77,7 @@ function generateNodeQueries(nodes) {
 			...fields.map(field => {
 				return `
 					mutation attachFieldResolvers {
-						attachNodeFieldResolver(
+						attachOrReplaceNodeFieldResolver(
 							nodeId: "${id}"
 							input: {
 								fieldName: "${field.ref}"
@@ -135,7 +134,7 @@ async function executeQueries(queries = [], token, endpoint) {
 	for (const query of queries) {
 		console.log(`${((number / queries.length) * 100).toFixed(2)}%`)
 		await executeMutation(query, token, endpoint)
-		await sleep(400)
+		await sleep(200)
 		number++
 	}
 	console.log(`Done!`)
