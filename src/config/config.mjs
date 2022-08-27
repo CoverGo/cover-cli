@@ -1,7 +1,6 @@
-import { getConfigForEnv } from './file.mjs'
+import { getConfigForEnv, DirectoryNotAccessibleError } from './file.mjs'
 import { exit } from 'node:process'
-import { access, writeFile, readFile } from 'node:fs/promises'
-import { DirectoryNotAccessibleError } from './file.mjs'
+import * as fs from 'node:fs/promises'
 import { chalk } from 'zx'
 import { stringify, parse } from 'yaml'
 
@@ -9,12 +8,12 @@ export async function getConfig() {
   try {
     const path = await getConfigForEnv()
     try {
-      await access(path)
+      await fs.access(path)
     } catch {
-      await writeFile(path, '')
+      await fs.writeFile(path, '')
     }
 
-    const contents = await readFile(path, 'utf8')
+    const contents = await fs.readFile(path, 'utf8')
     return parse(contents) ?? {}
   } catch (e) {
     if (e instanceof DirectoryNotAccessibleError) {
@@ -30,13 +29,14 @@ export async function writeConfig(config) {
   try {
     const path = await getConfigForEnv()
 		const content = stringify(config)
-		await writeFile(path, content)
+		await fs.writeFile(path, content)
   } catch (e) {
     if (e instanceof DirectoryNotAccessibleError) {
       console.error(chalk.bgRed(e.message))
       exit(1)
     }
 
-    throw e
+    console.error(e)
+    exit(1)
   }
 }

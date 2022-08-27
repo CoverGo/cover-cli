@@ -1,14 +1,31 @@
 #!/usr/bin/env node
-
 import { Command } from 'commander'
+import { chalk } from 'zx'
+import { exit } from 'node:process'
+import { getConfig } from './src/config/config.mjs'
+
 const program = new Command()
 
 program
-	.command('info', 'configure a new tenant')
-	.argument('<name>', 'show the tenant information for this alias')
-	.action(async (name) => {
-		const {readConfig} = await import("./tenant/config.mjs");
-		console.log(await readConfig(name))
+	.command('info', 'Show information about this environment')
+	.argument('<alias>', 'The alias of the environment you want information on')
+	.action(async (alias) => {
+		const config = await getConfig()
+		const tenants = config?.tenants ?? {}
+
+		if (tenants[alias]) {
+			const tenant = tenants[alias]
+			console.log(chalk.green(`${chalk.bold('Tenant ID')}: ${tenant?.tenantId ?? ''}`))
+			console.log(chalk.green(`${chalk.bold('Client ID')}: ${tenant?.clientId ?? ''}`))
+			console.log(chalk.green(`${chalk.bold('Username')}: ${tenant?.username ?? ''}`))
+			console.log(chalk.green(`${chalk.bold('Password')}: ${tenant?.password ?? ''}`))
+			console.log(chalk.green(`${chalk.bold('Environment')}: ${tenant?.environment ?? ''}`))
+
+			exit(0)
+		}
+
+		console.error(chalk.bold.red(`Tenant \`${alias}\` not found!`))
+		exit(1)
 	})
 
 program.parse()
