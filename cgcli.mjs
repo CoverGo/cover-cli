@@ -5,9 +5,10 @@ const program = new Command();
 
 program
 	.name('cover-cli')
-	.description('Small utility scripts for interacting with the covergo platform.')
+	.description('Utility scripts for interacting with the covergo platform')
 	.version('0.0.1')
-	.command('graph', 'interact with the graph API')
-	.command('config', 'configure this tool')
+	.command('graph', 'Interact with the graph API')
+	.command('env', 'Manage environments')
+	.command('tenant', 'Manage tenants')
 
 program.parse()
