@@ -35,5 +35,5 @@ export async function getConfigForTenant(alias) {
 
 export async function getConfigForEnv() {
 	const configDir = await getConfigDir()
-	return `${configDir}/env.yaml`
+	return `${configDir}/config.yaml`
 }

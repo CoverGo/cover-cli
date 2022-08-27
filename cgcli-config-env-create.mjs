@@ -45,10 +45,12 @@ program
 				await fs.writeFile(path, '')
 			}
 
-			const env = await fs.readFile(path, 'utf8')
-			const environments = parse(env) ?? {}
+			const contents = await fs.readFile(path, 'utf8')
+			const config = parse(contents) ?? {}
+			const environments = config?.environments ?? {}
 			environments[alias] = { endpoint }
-			const content = stringify(environments)
+			config.environments = environments
+			const content = stringify(config)
 			await fs.writeFile(path, content)
 
 			console.log('')
