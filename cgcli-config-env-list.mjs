@@ -8,7 +8,7 @@ const program = new Command()
 
 program
 	.command('list', 'List all configured environments')
-	.action(async (alias) => {
+	.action(async () => {
 		const config = await getConfig()
 		const environments = config?.environments ?? {}
 

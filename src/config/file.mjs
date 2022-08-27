@@ -1,5 +1,5 @@
-import os from "node:os";
-import * as fs from 'node:fs/promises';
+import os from 'node:os'
+import * as fs from 'node:fs/promises'
 import mkdirp from 'mkdirp'
 
 const userHomeDir = os.homedir()
@@ -16,13 +16,7 @@ export async function getConfigDir() {
 		await fs.access(configDir)
 	} catch {
 		mkdirp(configDir)
-	}
-
-	// try again
-	try {
-		await fs.access(configDir)
-	} catch {
-		throw new DirectoryNotAccessibleError(configDir)
+		return configDir
 	}
 
 	return configDir
