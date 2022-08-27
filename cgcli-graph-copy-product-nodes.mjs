@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander')
+import { Command } from 'commander'
 const program = new Command()
 
 program.command('product-nodes', 'copy product nodes from one tenant to another')

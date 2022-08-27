@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander')
+import { Command } from 'commander'
 const program = new Command()
 
 program
@@ -10,7 +10,7 @@ program
 		const { fetchNewToken, saveToken } = await import("./tenant/config.mjs");
 		const token = await fetchNewToken(name)
 		await saveToken(name, token)
-		console.log(`new token \`${token}\` stored and ready for use`)
+		console.log(`New token \`${token}\` stored and ready for use.`)
 	})
 
 program.parse()

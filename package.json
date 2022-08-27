@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "repository": "https://github.com/CoverGo/cover-cli",
   "bin": {
     "cgcli": "./cgcli"
@@ -15,7 +16,9 @@
     "commander": "^9.4.0",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
-    "mkdirp": "^1.0.4"
+    "mkdirp": "^1.0.4",
+    "yaml": "^2.1.1",
+    "zx": "^7.0.8"
   },
   "devDependencies": {
     "release-it": "^15.4.0"
