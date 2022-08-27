@@ -5,7 +5,7 @@ import mkdirp from 'mkdirp'
 const userHomeDir = os.homedir()
 const configDir = `${userHomeDir}/.config/cover-cli`
 
-class DirectoryNotAccessibleError extends Error {
+export class DirectoryNotAccessibleError extends Error {
 	constructor(path) {
 		super(`Directory at \`${path}\` does is not accessible.`)
 	}
@@ -28,7 +28,12 @@ export async function getConfigDir() {
 	return configDir
 }
 
-export async function getConfigForTenant(name) {
+export async function getConfigForTenant(alias) {
 	const configDir = await getConfigDir()
-	return `${configDir}/${name}.tenant`
+	return `${configDir}/${alias}.tenant`
+}
+
+export async function getConfigForEnv() {
+	const configDir = await getConfigDir()
+	return `${configDir}/env.yaml`
 }
