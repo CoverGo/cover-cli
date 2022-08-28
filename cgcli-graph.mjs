@@ -4,9 +4,9 @@ import { Command } from 'commander'
 
 const program = new Command()
 
-program.command('export', 'export bulk data from various domains')
-program.command('import', 'import bulk data to various domains')
-program.command('copy', 'shortcut to import and export between tenants')
-program.command('create-tenant', 'create a new tenant')
+program.command('copy', 'Export and re-import data between tenants')
+program.command('create-tenant', 'Create a new tenant on an environment')
+program.command('export', 'Export data between tenants')
+program.command('import', 'Import data between tenants')
 
 program.parse()

@@ -8,7 +8,7 @@ program.command('product-nodes', 'import product nodes')
 	.argument('<types>', 'JSON string representing nodes to import from exported file')
 	.action(async (name, nodes) => {
 		const { getConfig } = await import("./tenant/config.mjs")
-		const { importNodes } = await import("./graph/import.mjs");
+		const { importNodes } = await import("./src/graph/import.mjs");
 		const config = await getConfig(name)
 		const rootNode = await importNodes(JSON.parse(nodes), config.TOKEN, config.ENDPOINT)
 
