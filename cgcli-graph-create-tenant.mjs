@@ -16,7 +16,7 @@ program
 	.action(async (name, token, options) => {
 		const { getConfig } = await import("./tenant/config.mjs")
 		const config = await getConfig(name)
-		const { useCreateTenant } = await import("./graph/create-tenant.mjs")
+		const { useCreateTenant } = await import("./src/graph/create-tenant.mjs")
 		const createTenant = useCreateTenant(token, config.ENDPOINT)
 
 		const fsConfig = JSON.parse(options.fs)

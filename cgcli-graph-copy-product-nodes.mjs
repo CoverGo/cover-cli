@@ -9,8 +9,8 @@ program.command('product-nodes', 'copy product nodes from one tenant to another'
 	.argument('<nodeId>', 'the root node you want to copy')
 	.action(async (sourceName, targetName, nodeId) => {
 		const { getConfig } = await import("./tenant/config.mjs")
-		const { exportProductBuilderTree } = await import("./graph/export.mjs");
-		const { importNodes } = await import("./graph/import.mjs");
+		const { exportProductBuilderTree } = await import("./src/graph/export.mjs");
+		const { importNodes } = await import("./src/graph/import.mjs");
 
 		const sourceConfig = await getConfig(sourceName)
 		const targetConfig = await getConfig(targetName)

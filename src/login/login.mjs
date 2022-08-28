@@ -1,6 +1,8 @@
 import gql from 'graphql-tag'
 import { print } from 'graphql'
 import axios from 'axios'
+import {chalk} from "zx";
+import {exit} from "node:process";
 
 export async function fetchNewToken(environment, tenant) {
 	const query = gql`
@@ -27,7 +29,13 @@ export async function fetchNewToken(environment, tenant) {
 			}
 		})
 
-		return response.data.data.token_2.accessToken
+		const token = response.data.data?.token_2?.accessToken
+		if (!token) {
+			console.log(chalk.red(`Couldn't get token`))
+			exit(1)
+		}
+
+		return token
 	}
 	catch (e) {
 		console.error(e)

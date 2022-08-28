@@ -4,6 +4,28 @@ import * as fs from 'node:fs/promises'
 import { chalk } from 'zx'
 import { stringify, parse } from 'yaml'
 
+export async function getTenantWithEnvironment(alias) {
+  const config = await getConfig(alias)
+  const tenant = config?.tenants?.[alias]
+
+  if (!tenant) {
+    throw new Error(`No tenant found with alias: \`${alias}\`.`)
+  }
+
+  const envName = tenant.environment
+  const envConfig = config.environments[envName]
+  if (!envConfig) {
+    throw new Error(`No environment found with name: \`${envName}\`.`)
+  }
+
+  tenant.environment = {
+    name: envName,
+    endpoint: envConfig.endpoint
+  }
+
+  return tenant
+}
+
 export async function getConfig() {
   try {
     const path = await getConfigForEnv()

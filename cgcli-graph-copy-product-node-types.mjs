@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-
-
 import { Command } from 'commander'
 const program = new Command()
 
@@ -13,8 +11,8 @@ program.command('product-node-types', 'copy node types from source to target ten
 		const sourceConfig = await getConfig(sourceName)
 		const targetConfig = await getConfig(targetName)
 
-		const { exportProductBuilderTypes } = await import("./graph/export.mjs")
-		const { importTypes } = await import("./graph/import.mjs");
+		const { exportProductBuilderTypes } = await import("./src/graph/export.mjs")
+		const { importTypes } = await import("./src/graph/import.mjs");
 		console.log(`Exporting from ${sourceName}`)
 
 		try {

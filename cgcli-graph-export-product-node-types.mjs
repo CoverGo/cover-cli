@@ -8,7 +8,7 @@ program.command('product-node-types', 'export product node types')
 	.action(async (name) => {
 		const { getConfig } = await import("./tenant/config.mjs")
 		const config = await getConfig(name)
-		const { exportProductBuilderTypes } = await import("./graph/export.mjs")
+		const { exportProductBuilderTypes } = await import("./src/graph/export.mjs")
 		const result = await exportProductBuilderTypes(config.TOKEN, config.ENDPOINT)
 		console.log(JSON.stringify(result))
 	})
