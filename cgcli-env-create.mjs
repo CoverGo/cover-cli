@@ -3,7 +3,6 @@ import { Command } from 'commander'
 import { chalk, question } from 'zx'
 import { exit } from 'node:process'
 import { z } from 'zod'
-import { stringify } from 'yaml'
 import { displayValidationErrors } from './src/validation/error.mjs'
 import { getConfig, writeConfig } from './src/config/config.mjs'
 
@@ -35,7 +34,7 @@ program
 			exit(1)
 		}
 
-		const config = getConfig()
+		const config = await getConfig()
 		const environments = config?.environments ?? {}
 		environments[alias] = { endpoint }
 		config.environments = environments
@@ -43,7 +42,7 @@ program
 
 		console.log('')
 		console.log(chalk.green.bold(`New environment \`${alias}\` created!`))
-		console.log(chalk.green(stringify(environments[alias])))
+		console.log(chalk.blue(`${chalk.bold('Endpoint')}: ${endpoint}`))
 		exit(0)
 	})
 

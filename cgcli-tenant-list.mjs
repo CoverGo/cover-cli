@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { stringify } from 'yaml'
-import { $, chalk, question } from 'zx'
-import { z } from 'zod'
-import { exit } from 'node:process'
-import { getConfig, writeConfig } from './src/config/config.mjs'
-import { displayValidationErrors } from './src/validation/error.mjs'
+import { chalk } from 'zx'
+import { getConfig } from './src/config/config.mjs'
 const program = new Command()
 
 program
