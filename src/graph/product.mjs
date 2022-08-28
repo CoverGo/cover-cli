@@ -3,7 +3,19 @@ import { print } from 'graphql'
 import axios from 'axios'
 import cliProgress from 'cli-progress'
 
+export class QueryError extends Error {
+	query = ''
+	variables = {}
+
+	constructor(message, query, variables) {
+		super(message)
+		this.query = query
+		this.variables = variables
+	}
+}
+
 export function useGraphProduct(endpoint, token) {
+
 	async function createProduct(product) {
 		const query = gql`
 			mutation cloneProduct(
@@ -27,29 +39,29 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
-		const response = await axios.post(endpoint, {
-			query: print(query),
-			variables: {
-				...product,
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables: {
+					...product,
+				}
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
 			}
-		}, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			}
-		})
+		)
 
 		if (response.data.errors) {
-			throw new Error(response.data.errors?.[0].message)
+			throw new QueryError(response.data.errors?.[0].message.trim(), print(query), product)
 		}
 
 		return response.data.data.createProduct
 	}
 
-	// async function defineType() {
-	// 	const quye
-	// }
-
-	async function createNode(id, ref, alias, position, fields) {
+	async function createNode(id, ref, type, alias, position, fields) {
 		const query = gql`
 			mutation importNode(
 				$id: ID!,
@@ -77,10 +89,10 @@ export function useGraphProduct(endpoint, token) {
 				variables: {
 					id,
 					ref,
+					type,
 					alias,
 					position,
-					fields,
-					type: 'string'
+					fields
 				}
 			},
 			{
@@ -91,7 +103,7 @@ export function useGraphProduct(endpoint, token) {
 		)
 
 		if (response.data.errors) {
-			throw new Error(response.data.errors?.[0].message)
+			throw new QueryError(response.data.errors?.[0].message)
 		}
 
 		return response.data.data.createNode
@@ -110,16 +122,18 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
+		const variables = {
+			nodeId,
+			fieldName,
+			text,
+			language
+		}
+
 		const response = await axios.post(
 			endpoint,
 			{
 				query: print(query),
-				variables: {
-					nodeId,
-					fieldName,
-					text,
-					language
-				}
+				variables,
 			},
 			{
 				headers: {
@@ -129,10 +143,45 @@ export function useGraphProduct(endpoint, token) {
 		)
 
 		if (response.data.errors) {
-			throw new Error(response.data.errors?.[0].message)
+			throw new QueryError(response.data.errors?.[0].message.trim(), print(query), variables)
 		}
 
 		return response.data.data.attachFieldResolver
+	}
+
+	async function updateProductTreeId(productId, productTreeId) {
+		const query = gql`
+			mutation updateProductTree($productId: productIdInput!, $productTreeId: String!) {
+				updateProduct(productId: $productId, input: { productTreeId: $productTreeId }) {
+					productTreeId
+				}
+			}
+		`
+
+		const variables = {
+			productId,
+			productTreeId
+		}
+
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
+			}
+		)
+
+		const errorMessage = response.data?.errors?.[0]?.message
+		if (errorMessage) {
+			throw new QueryError(errorMessage.trim(), print(query), variables)
+		}
+
+		return response.data.data?.updateProduct?.productTreeId
 	}
 
 	async function fetchProductTreeNodes(productTreeId) {
@@ -159,27 +208,29 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
-		try {
-			const response = await axios.post(
-				endpoint,
-				{
-					query: print(query),
-					variables: {
-						parentNodeId: productTreeId
-					}
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					}
-				}
-			)
+		const variables = {
+			parentNodeId: productTreeId
+		}
 
-			return response.data.data.listNodes
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				}
+			}
+		)
+
+		const errorMessage = response.data?.errors?.[0]?.message
+		if (errorMessage) {
+			throw new QueryError(errorMessage.trim(), print(query), variables)
 		}
-		catch (e) {
-			console.error(e)
-		}
+
+		return response.data.data.listNodes
 	}
 
 	async function fetchProduct(plan, type, version) {
@@ -230,11 +281,125 @@ export function useGraphProduct(endpoint, token) {
 		}
 	}
 
+	async function fetchProductSchema(productTreeId) {
+		const query = gql`
+			query productSchema($nodeId: ID!) {
+				productSchema(nodeId: $nodeId) {
+					id
+					nodeId
+					dataSchema
+					uiSchemas {
+						name
+						schema
+					}
+				}
+			}
+		`
+
+		const variables = {
+			nodeId: productTreeId
+		}
+
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}
+		)
+
+		const errorMessage = response.data?.errors?.[0]?.message
+		if (errorMessage) {
+			throw new QueryError(errorMessage.trim(), print(query), variables)
+		}
+
+		return response.data.data.productSchema
+	}
+
+	async function request(endpoint, query, variables) {
+		const response = await axios.post(
+			endpoint,
+			{
+				query: print(query),
+				variables
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}
+		)
+
+		const errorMessage = response.data?.errors?.[0]?.message
+		if (errorMessage) {
+			throw new QueryError(errorMessage.trim(), print(query), variables)
+		}
+
+		return response.data.data
+	}
+
+	async function createProductSchema(productTreeId, dataSchema) {
+		const query = gql`
+			mutation updateSchema($nodeId: ID!, $dataSchema: String!) {
+				createProductSchema(input: {
+					nodeId: $nodeId,
+					dataSchema: $dataSchema
+				}) {
+					value
+					status
+				}
+			}
+		`
+
+		const variables = {
+			nodeId: productTreeId,
+			dataSchema
+		}
+
+		const response = await request(endpoint, query, variables)
+		return response?.createProductSchema?.value
+	}
+
+	async function createUiProductSchema(productSchemaId, productTreeId, schema) {
+		const query = gql`
+			mutation updateSchema($productSchemaId: ID!, $name: String!, $schema: String!) {
+				addUiSchemaToProductSchema(
+					productSchemaId: $productSchemaId
+					input: {
+						name: $name,
+						schema: $schema
+					}
+				) {
+					status
+					errors
+				}
+			}
+		`
+
+		const variables = {
+			productSchemaId: productTreeId,
+			name: productTreeId,
+			schema: schema,
+		}
+
+		const response = await request(endpoint, query, variables)
+		return response?.addUiSchemaToProductSchema?.status
+	}
+
 	return {
 		createProduct,
+		updateProductTreeId,
 		fetchProductTreeNodes,
 		fetchProduct,
 		createNode,
 		attachFieldResolver,
+		createProductSchema,
+		createUiProductSchema,
+		fetchProductSchema,
 	}
 }
