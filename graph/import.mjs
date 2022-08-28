@@ -4,7 +4,7 @@ import gql from "graphql-tag"
 function generateTypeQueries(types) {
 	return types.map(type => {
 		const fields = type.fields ? type.fields : []
-		return gql`mutation importType {
+		return `mutation importType {
 			defineNodeType(typeName: "${type.type}", fields: [
 				${fields.map(field => {
 					let resolver = null
