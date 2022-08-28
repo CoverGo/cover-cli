@@ -15,11 +15,11 @@ program
 
 		if (tenants[alias]) {
 			const tenant = tenants[alias]
-			console.log(chalk.green(`${chalk.bold('Tenant ID')}: ${tenant?.tenantId ?? ''}`))
-			console.log(chalk.green(`${chalk.bold('Client ID')}: ${tenant?.clientId ?? ''}`))
-			console.log(chalk.green(`${chalk.bold('Username')}: ${tenant?.username ?? ''}`))
-			console.log(chalk.green(`${chalk.bold('Password')}: ${tenant?.password ?? ''}`))
-			console.log(chalk.green(`${chalk.bold('Environment')}: ${tenant?.environment ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Tenant ID')}: ${tenant?.tenantId ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Client ID')}: ${tenant?.clientId ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Username')}: ${tenant?.username ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Password')}: ${tenant?.password ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Environment')}: ${tenant?.environment ?? ''}`))
 
 			exit(0)
 		}

@@ -14,8 +14,7 @@ program
 		const environments = config?.environments ?? {}
 
 		if (environments[alias]) {
-			console.log(chalk.green(`${chalk.bold('Description')}: ${environments[alias]?.description ?? '[empty]'}`))
-			console.log(chalk.green(`${chalk.bold('Endpoint')}: ${environments[alias]?.endpoint ?? ''}`))
+			console.log(chalk.blue(`${chalk.bold('Endpoint')}: ${environments[alias]?.endpoint ?? ''}`))
 			exit(0)
 		}
 

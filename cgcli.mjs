@@ -10,5 +10,6 @@ program
 	.command('graph', 'Interact with the graph API')
 	.command('env', 'Manage environments')
 	.command('tenant', 'Manage tenants')
+	.command('login', 'Change the current logded in tenant')
 
 program.parse()

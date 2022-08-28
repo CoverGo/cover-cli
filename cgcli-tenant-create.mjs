@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { stringify } from 'yaml'
-import { $, chalk, question } from 'zx'
+import { chalk, question } from 'zx'
 import { z } from 'zod'
 import { exit } from 'node:process'
 import { getConfig, writeConfig } from './src/config/config.mjs'
@@ -20,7 +19,7 @@ program
 	.action(async (alias, env, options) => {
 		const config = await getConfig()
 		if (!config.environments?.[env]) {
-			console.error(chalk.bold.red(`Unable to find environment \`${env}\`, check the environments listed in \`cgcli config env list\`.`))
+			console.error(chalk.bold.red(`Unable to find environment \`${env}\`, check the environments listed in \`cgcli env list\`.`))
 			exit(1)
 		}
 
@@ -60,13 +59,14 @@ program
 		}
 
 		if (!options.yes) {
-			console.log(chalk.green(`${chalk.bold('Tenant ID')}: ${tenantId}`))
-			console.log(chalk.green(`${chalk.bold('Client ID')}: ${clientId}`))
-			console.log(chalk.green(`${chalk.bold('Username')}: ${username}`))
-			console.log(chalk.green(`${chalk.bold('Password')}: ${password}`))
-			console.log(chalk.green(`${chalk.bold('Environment')}: ${env}`))
+			console.log('')
+			console.log(chalk.blue(`${chalk.bold('Tenant ID')}: ${tenantId}`))
+			console.log(chalk.blue(`${chalk.bold('Client ID')}: ${clientId}`))
+			console.log(chalk.blue(`${chalk.bold('Username')}: ${username}`))
+			console.log(chalk.blue(`${chalk.bold('Password')}: ${password}`))
+			console.log(chalk.blue(`${chalk.bold('Environment')}: ${env}`))
 
-			const confirmation = await question(`(y/n) Do you wish to create this tenant? `)
+			const confirmation = await question(`Do you wish to create this tenant? ${chalk.bold(`y/n`)} `)
 			if (confirmation.toLowerCase() !== 'y') {
 				exit(1)
 			}
@@ -79,7 +79,6 @@ program
 
 		console.log('')
 		console.log(chalk.green.bold(`New tenant \`${alias}\` created!`))
-		console.log(chalk.green(stringify(tenants[alias])))
 		exit(0)
 	})
 
