@@ -1,17 +1,8 @@
-import gql from "graphql-tag"
-import { print } from "graphql"
-import axios from "axios"
+import gql from 'graphql-tag'
 
 class QueryError extends Error {}
 
-export function useCreateTenant(token, endpoint) {
-	async function executeQuery(fn, startMessage, endMessage) {
-		console.log(startMessage)
-		const result = await fn()
-		console.log(endMessage)
-		return result
-	}
-
+export function useTenantApi(request) {
 	async function createTenant(tenantId, email, username, password, redirectUris, fsConfig) {
 		const query = gql`
 			mutation createTenant(
@@ -47,69 +38,21 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				variables: {
-					tenantId,
-					email,
-					username,
-					password,
-					redirectUris,
-					fsConfig,
-				},
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		if (result.data.data.initializeTenant.errors?.[0]) {
-			throw new QueryError(result.data.data.initializeTenant.errors?.[0])
-		}
-	}
-
-	async function getToken(tenantId, username, password) {
-		const query = gql`
-			query getToken($tenantId: String!, $username: String!, $password: String!) {
-				token: token_2(
-					tenantId: $tenantId
-					clientId: "covergo_crm"
-					username: $username
-					password: $password
-				) {
-					accessToken
-					error
-				}
-			}
-		`
-
-		const result = await axios.post(
-			endpoint,
-			{
-				variables: {
-					tenantId,
-					username,
-					password,
-				},
-				query: print(query)
-			}
-		)
-
-		const tenantToken = result.data?.data?.token?.accessToken
-		if (!tenantToken) {
-			throw new QueryError('Cannot fetch token for newly created tenant. This is probably bug.')
+		const variables = {
+			tenantId,
+			email,
+			username,
+			password,
+			redirectUris,
+			fsConfig,
 		}
 
-		return tenantToken
+		await request(query, variables)
 	}
 
-	async function createMailTemplate(tenantToken) {
+	async function createMailTemplate() {
 		const query = gql`
-			mutation createEmailMjmlTemplate{
+			mutation createEmailMjmlTemplate {
 				createEmailMjmlTemplate(
 					input: {
 						name: "Invite User",
@@ -124,24 +67,10 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
-
-		if (result.data.data.createEmailMjmlTemplate.errors) {
-			throw new QueryError(result.data.data.createEmailMjmlTemplate.errors)
-		}
+		await request(query)
 	}
 
-	async function listTemplates(tenantToken) {
+	async function listTemplates() {
 		const query = gql`
 			query templates {
 				templates {
@@ -154,19 +83,8 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
-
-		const templateId = result.data.data?.templates?.list[0]?.id
+		const response = await request(query)
+		const templateId = response?.templates?.list[0]?.id
 		if (templateId) {
 			return templateId
 		}
@@ -174,11 +92,11 @@ export function useCreateTenant(token, endpoint) {
 		throw new QueryError('Unable to find template')
 	}
 
-	async function updateTemplate(tenantToken, templateId) {
+	async function updateTemplate(templateId) {
 		const templateUpdate = gql`
 			mutation updateEmailMjmlTemplate($templateId: String!) {
 				updateEmailMjmlTemplate(
-					templateId: "<id from query above>"
+					templateId: $templateId
 					input: {
 						logicalId: "newPasswordTemplate"
 					}
@@ -188,27 +106,14 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				variables: {
-					templateId
-				},
-				query: print(templateUpdate)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
-
-		if (result.data.data?.updateEmailMjmlTemplate?.errors) {
-			throw new QueryError(`Error returned from update template.`)
+		const variables = {
+			templateId
 		}
+
+		await request(templateUpdate, variables)
 	}
 
-	async function createSchemas(tenantToken) {
+	async function createSchemas() {
 		const query = gql`
 			mutation dataSchemaIndividual {
 				individualFields: createDataSchema(
@@ -263,20 +168,10 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
+		const response = await request(query)
 
 		const resultValues = {}
-		for (const [key, value] of Object.entries(result.data.data)) {
+		for (const [key, value] of Object.entries(response)) {
 			if (value?.createdStatus?.id) {
 				resultValues[key] = value?.createdStatus?.id
 			}
@@ -285,7 +180,7 @@ export function useCreateTenant(token, endpoint) {
 		return resultValues
 	}
 
-	async function updateTenantSchmeas(tenantToken, individualDataSchema, individualUiDataSchema, companyDataSchema, companyUiDataSchema) {
+	async function updateTenantSchemas(individualDataSchema, individualUiDataSchema, companyDataSchema, companyUiDataSchema) {
 		const query = gql`
 			mutation test(
 				$individualDataSchema: String!,
@@ -315,30 +210,17 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const result = await axios.post(
-			endpoint,
-			{
-				variables: {
-					individualDataSchema,
-					individualUiDataSchema,
-					companyDataSchema,
-					companyUiDataSchema
-				},
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
-
-		if (result.data.data.individual.errors || result.data.data.company.errors) {
-			throw new QueryError(`Failed to update tenant schemas.`)
+		const variables = {
+			individualDataSchema,
+			individualUiDataSchema,
+			companyDataSchema,
+			companyUiDataSchema
 		}
+
+		await request(query, variables)
 	}
 
-	async function createPermissionsGroup(tenantToken) {
+	async function createPermissionsGroup() {
 		const query = gql`
 			mutation createPermissionGroup{
 				createPermissionGroup(createPermissionGroupInput: {name:"Admin", description:"Admin role with access to everything"}){
@@ -347,21 +229,8 @@ export function useCreateTenant(token, endpoint) {
 				}
 			}
 		`
-		const result = await axios.post(
-			endpoint,
-			{
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
 
-		if (result.data.data.createPermissionGroup.errors) {
-			throw new QueryError(`Failed to create permission group.`)
-		}
+		await request(query)
 
 		const queryGroups = gql`
 			query permissionGroups {
@@ -372,19 +241,11 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		const queryResult = await axios.post(
-			endpoint,
-			{
-				query: print(queryGroups)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
+		await request(queryGroups)
 
-		const groupId = queryResult.data.data.permissionGroups?.[0]?.id
+		const queryResult = await request(query)
+
+		const groupId = queryResult.permissionGroups?.[0]?.id
 		if (groupId) {
 			return groupId
 		}
@@ -392,7 +253,7 @@ export function useCreateTenant(token, endpoint) {
 		throw new Error(`Failed to fetch permission group.`)
 	}
 
-	async function setAdminPermissions(tenantToken, groupId) {
+	async function setAdminPermissions(groupId) {
 		const query = gql`
 			mutation addPermissions($groupId: String!) {
 				role: addPermissionToPermissionGroup(id: $groupId permissionId: "role" targetId: "admin") { status errors }
@@ -592,64 +453,21 @@ export function useCreateTenant(token, endpoint) {
 			}
 		`
 
-		await axios.post(
-			endpoint,
-			{
-				variables: {
-					groupId
-				},
-				query: print(query)
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tenantToken}`,
-				}
-			}
-		)
+		const variables = {
+			groupId
+		}
+
+		await request(query, variables)
 	}
 
-	return async (tenantId, email, username, password, redirectUris, fsConfig) => {
-		try {
-			console.log(tenantId, email, username, password, redirectUris, fsConfig)
-
-			await executeQuery(
-				() => createTenant(tenantId, email, username, password, redirectUris, fsConfig),
-				'Creating tenant',
-				'Tenant created'
-			)
-
-			const tenantToken = await executeQuery(
-				() => getToken(tenantId, username, password),
-				`Fetching token for ${tenantId}`,
-				`Token for ${tenantId} fetched`
-			)
-
-			await executeQuery(() => createMailTemplate(tenantToken), 'Creating mail template', 'Mail template created')
-
-			const templateId = await executeQuery(
-				() => listTemplates(tenantToken),
-				'Listing mail templates',
-				'Mail templates listed'
-			)
-
-			console.log(templateId)
-
-			await executeQuery(() => updateTemplate(tenantToken, templateId), 'Updating template', 'Template updated')
-
-			const schemas = await executeQuery(() => createSchemas(tenantToken), 'Creating schemas', 'Schemas created')
-
-			console.log(schemas)
-
-			await executeQuery(
-				() => updateTenantSchmeas(tenantToken, schemas?.individualFields, schemas?.uiIndividualFields, schemas?.companyDynamicFields, schemas?.companyDynamicFields),
-				'Updating tenant schemas',
-				'Tenant schemas updated'
-			)
-
-			const groupId = await executeQuery(() => createPermissionsGroup(tenantToken), 'Creating permission group', 'Permission group created')
-			await executeQuery(() => setAdminPermissions(tenantToken, groupId), 'Setting admin permissions', 'Admin permissions set')
-		} catch (e) {
-			console.error(e)
-		}
+	return {
+		createTenant,
+		createMailTemplate,
+		listTemplates,
+		updateTemplate,
+		createSchemas,
+		updateTenantSchemas,
+		createPermissionsGroup,
+		setAdminPermissions,
 	}
 }
