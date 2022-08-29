@@ -1,20 +1,73 @@
 import gql from 'graphql-tag'
-import { print } from 'graphql'
-import axios from 'axios'
-import cliProgress from 'cli-progress'
+import { createRequest } from './api.js'
+import { getTenantWithEnvironment } from '../../config/config.mjs'
+import { fetchNewToken } from '../../login/login.mjs'
 
-export class QueryError extends Error {
-	query = ''
-	variables = {}
+export async function useProductApi(alias) {
+	const tenant = await getTenantWithEnvironment(alias)
+	const token = await fetchNewToken(tenant.environment, tenant)
+	const request = createRequest(tenant.environment, token)
 
-	constructor(message, query, variables) {
-		super(message)
-		this.query = query
-		this.variables = variables
+	async function fetchAllNodeTypes() {
+		const query = gql`
+			query nodeTypes {
+				nodeTypes {
+					id
+					ref
+					alias
+					type
+					fields {
+						ref
+						alias
+						type
+						resolver {
+							text
+							language
+						}
+					}
+				}
+			}
+		`
+
+		const response = await request(query)
+		return response.nodeTypes
 	}
-}
 
-export function useGraphProduct(endpoint, token) {
+	async function createNodeType(nodeType) {
+		const query = gql`
+			mutation importNodeType($typeName: String!, $fields: [NodeFieldInput!]) {
+				defineNodeType(typeName: $typeName, fields: $fields)
+			}
+		`
+
+		const fields = (nodeType.fields ?? [])
+			.map(field => {
+				const resolver = field?.resolver
+					? {
+						text: field.resolver.text,
+						language: field.resolver.language
+					}
+					: {
+						text: "",
+						language: "CONSTANT"
+					}
+
+				return {
+					ref: field.ref,
+					type: field.type,
+					alias: field.alias,
+					resolver
+				}
+			})
+
+		const variables = {
+			typeName: nodeType.type,
+			fields: fields
+		}
+
+		const response = await request(query, variables)
+		return response?.defineNodeType
+	}
 
 	async function createProduct(product) {
 		const query = gql`
@@ -39,26 +92,8 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables: {
-					...product,
-				}
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		if (response.data.errors) {
-			throw new QueryError(response.data.errors?.[0].message.trim(), print(query), product)
-		}
-
-		return response.data.data.createProduct
+		const response = await request(query, { ...product })
+		return response?.createProduct
 	}
 
 	async function createNode(id, ref, type, alias, position, fields) {
@@ -82,31 +117,17 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables: {
-					id,
-					ref,
-					type,
-					alias,
-					position,
-					fields
-				}
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		if (response.data.errors) {
-			throw new QueryError(response.data.errors?.[0].message)
+		const variables = {
+			id,
+			ref,
+			type,
+			alias,
+			position,
+			fields
 		}
 
-		return response.data.data.createNode
+		const response = await request(query, variables)
+		return response?.createNode
 	}
 
 	async function attachFieldResolver(nodeId, fieldName, text, language) {
@@ -129,24 +150,8 @@ export function useGraphProduct(endpoint, token) {
 			language
 		}
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		if (response.data.errors) {
-			throw new QueryError(response.data.errors?.[0].message.trim(), print(query), variables)
-		}
-
-		return response.data.data.attachFieldResolver
+		const response = await request(query, variables)
+		return response?.attachFieldResolver
 	}
 
 	async function updateProductTreeId(productId, productTreeId) {
@@ -163,25 +168,8 @@ export function useGraphProduct(endpoint, token) {
 			productTreeId
 		}
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		const errorMessage = response.data?.errors?.[0]?.message
-		if (errorMessage) {
-			throw new QueryError(errorMessage.trim(), print(query), variables)
-		}
-
-		return response.data.data?.updateProduct?.productTreeId
+		const response = await request(query, variables)
+		return response?.updateProduct?.productTreeId
 	}
 
 	async function fetchProductTreeNodes(productTreeId) {
@@ -212,25 +200,8 @@ export function useGraphProduct(endpoint, token) {
 			parentNodeId: productTreeId
 		}
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				}
-			}
-		)
-
-		const errorMessage = response.data?.errors?.[0]?.message
-		if (errorMessage) {
-			throw new QueryError(errorMessage.trim(), print(query), variables)
-		}
-
-		return response.data.data.listNodes
+		const response = await request(query, variables)
+		return response.listNodes
 	}
 
 	async function fetchProduct(plan, type, version) {
@@ -254,28 +225,18 @@ export function useGraphProduct(endpoint, token) {
 			}
 		`
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables: {
-					where: {
-						productId: {
-							plan,
-							type,
-							version
-						}
-					}
-				}
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
+		const variables = {
+			where: {
+				productId: {
+					plan,
+					type,
+					version
 				}
 			}
-		)
+		}
 
-		const product = response.data.data?.products?.list?.[0]
+		const response = await request(query, variables)
+		const product = response?.products?.list?.[0]
 		if (product) {
 			return product
 		}
@@ -300,47 +261,8 @@ export function useGraphProduct(endpoint, token) {
 			nodeId: productTreeId
 		}
 
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}
-		)
-
-		const errorMessage = response.data?.errors?.[0]?.message
-		if (errorMessage) {
-			throw new QueryError(errorMessage.trim(), print(query), variables)
-		}
-
-		return response.data.data.productSchema
-	}
-
-	async function request(endpoint, query, variables) {
-		const response = await axios.post(
-			endpoint,
-			{
-				query: print(query),
-				variables
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}
-		)
-
-		const errorMessage = response.data?.errors?.[0]?.message
-		if (errorMessage) {
-			throw new QueryError(errorMessage.trim(), print(query), variables)
-		}
-
-		return response.data.data
+		const response = await request(query, variables)
+		return response?.productSchema
 	}
 
 	async function createProductSchema(productTreeId, dataSchema) {
@@ -361,7 +283,7 @@ export function useGraphProduct(endpoint, token) {
 			dataSchema
 		}
 
-		const response = await request(endpoint, query, variables)
+		const response = await request(query, variables)
 		return response?.createProductSchema?.value
 	}
 
@@ -387,7 +309,7 @@ export function useGraphProduct(endpoint, token) {
 			schema: schema,
 		}
 
-		const response = await request(endpoint, query, variables)
+		const response = await request(query, variables)
 		return response?.addUiSchemaToProductSchema?.status
 	}
 
@@ -401,5 +323,7 @@ export function useGraphProduct(endpoint, token) {
 		createProductSchema,
 		createUiProductSchema,
 		fetchProductSchema,
+		fetchAllNodeTypes,
+		createNodeType,
 	}
 }
