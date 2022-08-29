@@ -1,28 +1,29 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-const program = new Command()
+import { useProductApi } from './src/graph/api/useProductApi.mjs'
+import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { exit } from 'node:process'
+import { chalk } from 'zx'
 
+const program = new Command()
 program.command('product-node-types', 'copy node types from source to target tenant')
 	.argument('<tenant source alias>', 'alias of a tenant to copy node types from')
 	.argument('<tenant target alias>', 'alias of a tenant to copy node types to`')
-	.action(async (sourceName, targetName) => {
-		const { getConfig } = await import("./tenant/config.mjs")
+	.action(async (sourceAlias, targetAlias) => {
+		console.log(`Copying node types from ${sourceAlias} to ${targetAlias}.`)
 
-		const sourceConfig = await getConfig(sourceName)
-		const targetConfig = await getConfig(targetName)
+		const sourceContext = await useProductApi(sourceAlias)
+		const targetContext = await useProductApi(targetAlias)
+		const queries = useProductQueries(sourceContext)
+		const mutations = useProductMutations(targetContext)
 
-		const { exportProductBuilderTypes } = await import("./src/graph/export.mjs")
-		const { importTypes } = await import("./src/graph/import.mjs");
-		console.log(`Exporting from ${sourceName}`)
+		const response = await queries.fetchAllNodeTypes()
+		await mutations.createNodeTypes(response)
 
-		try {
-			const types = await exportProductBuilderTypes(sourceConfig.TOKEN, sourceConfig.ENDPOINT)
-			await importTypes(types, targetConfig.TOKEN, targetConfig.ENDPOINT)
-		} catch (e) {
-			console.error(e.message)
-		}
+		console.log('')
+		console.log(chalk.bold.green(`Done!`))
 
-		console.log("Import complete!")
+		exit(0)
 	})
 
 program.parse()
