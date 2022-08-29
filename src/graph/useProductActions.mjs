@@ -8,12 +8,12 @@ function generateId() {
 }
 
 export const useProductQueries = (apiContext) => {
-	async function fetchProduct(productId, sourceAlias) {
+	async function fetchProduct(productId) {
 		try {
 			const [plan, name, version] = productId.split('/')
 			const product = await apiContext.fetchProduct(plan, name, version)
 			if (!product) {
-				console.log(chalk.red(`Product \`${productId}\` not found on tenant \`${sourceAlias}\`.`))
+				console.log(chalk.red(`Product \`${productId}\` not found.`))
 				exit(1)
 			}
 
@@ -149,7 +149,7 @@ export const useProductMutations = (apiContext) => {
 		}
 
 		console.log('')
-		console.log(chalk.green(`${chalk.bold('New root node:')} ${rootNode}`))
+		console.log(chalk.green(`${chalk.bold('Newly created root node:')} ${rootNode}`))
 
 		return rootNode
 	}

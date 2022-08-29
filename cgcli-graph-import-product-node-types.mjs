@@ -1,19 +1,27 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
+import { argDescriptions } from './src/strings.js'
+import { useProductApi } from './src/graph/api/useProductApi.mjs'
+import { useProductMutations } from './src/graph/useProductActions.mjs'
+import { chalk } from 'zx'
+import { exit } from 'node:process'
 const program = new Command()
 
-program.command('product-node-types', 'export product node types')
-	.argument('<tenant alias>', 'alias of a tenant configured with `cgcli config tenant create`')
-	.argument('<types>', 'JSON string representing types to import from exported file')
-	.action(async (name, types) => {
-		const { getConfig } = await import("./tenant/config.mjs")
-		const { importTypes } = await import("./src/graph/import.mjs");
+program.command('product-node-types', 'Import node types from input')
+	.argument('<tenant alias>', argDescriptions.targetAlias)
+	.argument('<types>', argDescriptions.nodeTypes)
+	.action(async (alias, types) => {
+		console.log(`Importing node types to ${alias}.`)
 
-		const config = await getConfig(name)
-		await importTypes(JSON.parse(types), config.TOKEN, config.ENDPOINT)
+		const targetContext = await useProductApi(alias)
+		const mutations = useProductMutations(targetContext)
+		await mutations.createNodeTypes(types)
 
-		console.log("Import complete!")
+		console.log('')
+		console.log(chalk.bold.green(`Done!`))
+
+		exit(0)
 	})
 
 program.parse()

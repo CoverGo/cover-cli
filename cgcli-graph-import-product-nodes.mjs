@@ -1,19 +1,27 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
+import { argDescriptions } from './src/strings.js'
+import { useProductApi } from './src/graph/api/useProductApi.mjs'
+import { useProductMutations } from './src/graph/useProductActions.mjs'
+import { chalk } from 'zx'
+import { exit } from 'node:process'
 const program = new Command()
 
-program.command('product-nodes', 'import product nodes')
-	.argument('<tenant alias>', 'alias of a tenant configured with `cgcli config tenant create`')
-	.argument('<types>', 'JSON string representing nodes to import from exported file')
-	.action(async (name, nodes) => {
-		const { getConfig } = await import("./tenant/config.mjs")
-		const { importNodes } = await import("./src/graph/import.mjs");
-		const config = await getConfig(name)
-		const rootNode = await importNodes(JSON.parse(nodes), config.TOKEN, config.ENDPOINT)
+program.command('product-nodes', 'Import product nodes from input')
+	.argument('<tenant alias>', argDescriptions.targetAlias)
+	.argument('<nodes>', argDescriptions.nodes)
+	.action(async (alias, nodes) => {
+		console.log(`Importing nodes to \`${alias}\`.`)
 
-		console.log("Import complete!")
-		console.log(`New imported root node: ${rootNode}`)
+		const targetContext = await useProductApi(alias)
+		const mutations = useProductMutations(targetContext)
+		await mutations.createProductTree(nodes)
+
+		console.log('')
+		console.log(chalk.bold.green(`Done!`))
+
+		exit(0)
 	})
 
 program.parse()
