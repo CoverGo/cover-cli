@@ -4,12 +4,13 @@ import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { exit } from 'node:process'
 import { chalk } from 'zx'
 import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { argDescriptions } from './src/strings.js'
 
 const program = new Command()
 program.command('product-nodes', 'Copy an entire product with data schemas, tree and nodes')
-	.argument('<tenant source alias>', 'Alias of a tenant to copy node types from')
-	.argument('<tenant target alias>', 'Alias of a tenant to copy node types to`')
-	.argument('<productId>', 'The product id you wish to copy (name/type/version)')
+	.argument('<tenant source alias>', argDescriptions.sourceAlias)
+	.argument('<tenant target alias>', argDescriptions.targetAlias)
+	.argument('<productId>', argDescriptions.productId)
 	.action(async (sourceAlias, targetAlias, productId) => {
 		try {
 			const sourceContext = await useProductApi(sourceAlias)
@@ -19,7 +20,7 @@ program.command('product-nodes', 'Copy an entire product with data schemas, tree
 			const mutations = useProductMutations(targetContext)
 
 			console.log(chalk.blue(`${chalk.bold(`1/8:`)} Fetch \`${productId}\` from tenant \`${sourceAlias}\`.`))
-			const product = await queries.fetchProduct(productId, sourceAlias)
+			const product = await queries.fetchProduct(productId)
 
 			console.log(chalk.blue(`${chalk.bold(`2/8:`)} Creating product \`${productId}\` on tenant \`${targetAlias}\`.`))
 			const productCopy = await mutations.createProduct(product)

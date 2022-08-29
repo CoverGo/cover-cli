@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
+import { argDescriptions } from './src/strings.js'
 const program = new Command()
 
 program
 	.command('create-tenant', 'create a new tenant')
-	.argument('<tenant alias>', 'alias of a tenant configured with `cgcli config tenant create`')
+	.argument('<tenant alias>', argDescriptions.sourceAlias)
 	.argument('<tenant super admin token>', 'super admin token with ability to create tenants')
 	.requiredOption('-t, --tenant-id <tenant id>', 'the configured tenant id')
 	.requiredOption('-u, --username <username>', 'username used to get access token for the tenant')

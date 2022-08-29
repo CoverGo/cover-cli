@@ -1,24 +1,31 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
+import { useProductApi } from './src/graph/api/useProductApi.mjs'
+import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { chalk } from 'zx'
+import { argDescriptions } from './src/strings.js'
 const program = new Command()
 
-program.command('product-nodes', 'copy product nodes from one tenant to another')
-	.argument('<tenant source alias>', 'alias of a tenant to copy node types from')
-	.argument('<tenant target alias>', 'alias of a tenant to copy node types to`')
-	.argument('<nodeId>', 'the root node you want to copy')
-	.action(async (sourceName, targetName, nodeId) => {
-		const { getConfig } = await import("./tenant/config.mjs")
-		const { exportProductBuilderTree } = await import("./src/graph/export.mjs");
-		const { importNodes } = await import("./src/graph/import.mjs");
+program.command('product-nodes', 'Copy ')
+	.argument('<tenant source alias>', argDescriptions.sourceAlias)
+	.argument('<tenant target alias>', argDescriptions.targetAlias)
+	.argument('<productId>', argDescriptions.productId)
+	.action(async (sourceAlias, targetAlias, productId) => {
+		console.log(chalk.blue(`Copy product tree \`${productId}\` from tenant \`${sourceAlias}\` to \`${targetAlias}\`.`))
 
-		const sourceConfig = await getConfig(sourceName)
-		const targetConfig = await getConfig(targetName)
-		const nodes = await exportProductBuilderTree(nodeId, sourceConfig.TOKEN, sourceConfig.ENDPOINT)
-		const rootNode = await importNodes(nodes, targetConfig.TOKEN, targetConfig.ENDPOINT)
+		const sourceContext = await useProductApi(sourceAlias)
+		const targetContext = await useProductApi(targetAlias)
 
-		console.log("Import complete!")
-		console.log(`New imported root node: ${rootNode}`)
+		const queries = useProductQueries(sourceContext)
+		const mutations = useProductMutations(targetContext)
+
+		const product = await queries.fetchProduct(productId)
+		const productTree = await queries.fetchProductTree(product)
+		await mutations.createProductTree(productTree)
+
+		console.log('')
+		console.log(chalk.bold.green(`Done!`))
 	})
 
 program.parse()
