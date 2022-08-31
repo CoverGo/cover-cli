@@ -1,5 +1,6 @@
 export const argDescriptions = {
-	productId: 'The product id you wish to copy (name/type/version)',
+	productId: 'Product ID in the form of `name/type/version`',
+	productSchemaId: 'Product schema ID',
 	superAdminTenant: 'Super admin tenant for tenant creation',
 	alias: 'Alias of a tenant configured with `cgcli tenant config`',
 	sourceAlias: 'Source tenant alias',

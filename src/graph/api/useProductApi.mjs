@@ -304,7 +304,7 @@ export async function useProductApi(alias) {
 		`
 
 		const variables = {
-			productSchemaId: productTreeId,
+			productSchemaId,
 			name: productTreeId,
 			schema: schema,
 		}
