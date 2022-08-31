@@ -4,9 +4,9 @@ import { Command } from 'commander'
 
 const program = new Command()
 
-program.command('copy', 'Export and re-import data between tenants')
-program.command('create-tenant', 'Create a new tenant on an environment')
-program.command('export', 'Export data between tenants')
-program.command('import', 'Import data between tenants')
+program.command('product', 'Manage products')
+program.command('product-node-type', 'Manage product node types')
+program.command('product-tree', 'Manage product trees')
+program.command('tenant', 'Manage tenants on the API')
 
 program.parse()

@@ -1,13 +1,16 @@
-#!/usr/bin/env zx
-import { Command } from 'commander'
-import { useProductApi } from './src/graph/api/useProductApi.mjs'
-import { exit } from 'node:process'
-import { chalk } from 'zx'
-import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
-import { argDescriptions } from './src/strings.js'
+#!/usr/bin/env node
 
+import { Command } from 'commander'
+import { argDescriptions } from './src/strings.js'
+import { useProductApi } from './src/graph/api/useProductApi.mjs'
+import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { chalk } from 'zx'
+import { exit } from 'node:process'
 const program = new Command()
-program.command('product-nodes', 'Copy an entire product with data schemas, tree and nodes')
+
+program
+	.command('copy')
+	.description('Copy from one environment to another')
 	.argument('<tenant source alias>', argDescriptions.sourceAlias)
 	.argument('<tenant target alias>', argDescriptions.targetAlias)
 	.argument('<productId>', argDescriptions.productId)

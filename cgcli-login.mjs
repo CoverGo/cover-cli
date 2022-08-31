@@ -4,12 +4,13 @@ import { getConfig, writeConfig } from './src/config/config.mjs'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 import {fetchNewToken} from "./src/login/login.mjs";
+import { argDescriptions } from './src/strings.js'
 
 const program = new Command()
 
 program
-	.command('login', 'Configure a new environment')
-	.argument('<alias>', 'Tenant alias')
+	.command('login', 'Get API ket and set active tenant')
+	.argument('<alias>', argDescriptions.alias)
 	.action(async (alias) => {
 		const config = await getConfig()
 		const tenants = config?.tenants ?? {}
