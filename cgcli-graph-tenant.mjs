@@ -2,15 +2,15 @@
 
 import { Command } from 'commander'
 import { argDescriptions } from './src/strings.js'
-const program = new Command()
-import { useTenantApi } from './src/graph/api/useTenantApi.mjs'
 import { getTenantWithEnvironment } from './src/config/config.mjs'
 import { fetchNewToken } from './src/login/login.mjs'
 import { createRequest } from './src/graph/api/api.js'
+import { useTenantApi } from './src/graph/api/useTenantApi.mjs'
 import { chalk } from 'zx'
+const program = new Command()
 
-program
-	.command('create-tenant', 'create a new tenant')
+program.command('initialize')
+	.description('Initialize a new tenant')
 	.argument('<admin tenant>', argDescriptions.superAdminTenant)
 	.requiredOption('-t, --tenant-id <tenant id>', 'The configured tenant id')
 	.requiredOption('-u, --username <username>', 'Username used to get access token for the tenant')
@@ -67,6 +67,5 @@ program
 		const groupId = await tenantApi.createPermissionsGroup(tenantToken)
 		await tenantApi.setAdminPermissions(groupId)
 	})
-
 
 program.parse()
