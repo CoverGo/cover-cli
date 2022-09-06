@@ -3,6 +3,7 @@ import { print } from 'graphql'
 import axios from 'axios'
 import {chalk} from "zx";
 import {exit} from "node:process";
+import { getGraphEndpoint } from '../graph/api/api.js'
 
 export async function fetchNewToken(environment, tenant) {
 	const query = gql`
@@ -19,15 +20,18 @@ export async function fetchNewToken(environment, tenant) {
 	`
 
 	try {
-		const response = await axios.post(environment.endpoint, {
-			query: print(query),
-			variables: {
-				tenantId: tenant.tenantId,
-				clientId: tenant.clientId,
-				username: tenant.username,
-				password: tenant.password,
+		const response = await axios.post(
+			getGraphEndpoint(environment.endpoint),
+			{
+				query: print(query),
+				variables: {
+					tenantId: tenant.tenantId,
+					clientId: tenant.clientId,
+					username: tenant.username,
+					password: tenant.password,
+				}
 			}
-		})
+		)
 
 		const token = response.data.data?.token_2?.accessToken
 		if (!token) {

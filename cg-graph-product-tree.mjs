@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { argDescriptions } from './src/strings.js'
 import { chalk } from 'zx'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
-import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
 import { exit } from 'node:process'
 
 const program = new Command()
