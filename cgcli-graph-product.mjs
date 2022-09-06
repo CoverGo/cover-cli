@@ -61,6 +61,7 @@ program
 		}
 	})
 
+<<<<<<< HEAD
 program
 	.command('assign-tree')
 	.description('Assign a product tree to a product')
@@ -106,4 +107,6 @@ program
 		}
 	})
 
+=======
+>>>>>>> 757f2ea741cec0b4317d6f159ec38f664fc41e0f
 program.parse()
