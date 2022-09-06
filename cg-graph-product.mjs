@@ -64,4 +64,52 @@ program
 		}
 	})
 
+<<<<<<< HEAD
+program
+	.command('assign-tree')
+	.description('Assign a product tree to a product')
+	.argument('<tenant alias>', argDescriptions.alias)
+	.argument('<productId>', argDescriptions.productId)
+	.argument('<productTreeId>', argDescriptions.productTreeId)
+	.action(async (alias, productId, productTreeId) => {
+		try {
+			const context = await useProductApi(alias)
+			const queries = useProductQueries(context)
+			const mutations = useProductMutations(context)
+
+			console.log(chalk.blue(`Fetch \`${productId}\` from tenant \`${alias}\`.`))
+			const product = await queries.fetchProduct(productId)
+			const existingProductTreeId = product.productTreeId
+
+			console.log(chalk.blue(`Updating \`${productId}\` with productTreeId \`${productTreeId}\` on \`${alias}\`.`))
+			await mutations.updateProductTreeIdOnProduct(product, productTreeId)
+
+			if (!existingProductTreeId) {
+				console.warn(chalk.yellow(`No existing product tree found for \`${productId}\` on \`${alias}\`.`))
+				exit(0)
+			}
+
+			console.log(chalk.blue(`Fetching data schemas for \`${existingProductTreeId}\`.`))
+			const schema = await queries.fetchProductSchema(existingProductTreeId)
+
+			console.log(chalk.blue(`Create product schema for tree \`${productTreeId}\`.`))
+			const schemaId = await mutations.createProductDataSchema(productTreeId, schema.dataSchema)
+
+			console.log(chalk.blue(`Create product UI schema for tree \`${productTreeId}\`.`))
+			const uiSchemas = schema?.uiSchemas ?? []
+			for (const uiSchema of uiSchemas) {
+				if (uiSchema?.name === existingProductTreeId) {
+					await mutations.createProductUiDataSchema(schemaId, productTreeId, uiSchema.schema)
+				}
+			}
+
+			exit(0)
+		} catch (e) {
+			console.error(chalk.red.bold(e.message))
+			exit(1)
+		}
+	})
+
+=======
+>>>>>>> 757f2ea741cec0b4317d6f159ec38f664fc41e0f
 program.parse()
