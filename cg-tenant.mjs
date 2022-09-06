@@ -6,7 +6,10 @@ import { chalk, question } from 'zx'
 import { exit } from 'node:process'
 import { z } from 'zod'
 import { displayValidationErrors } from './src/validation/error.mjs'
+
 const program = new Command()
+
+program.name('cg tenant')
 
 program
 	.command('config')

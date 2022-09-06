@@ -6,7 +6,10 @@ import { chalk } from 'zx'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
 import { exit } from 'node:process'
+
 const program = new Command()
+
+program.name('cg graph product-tree')
 
 program
 	.command('copy')

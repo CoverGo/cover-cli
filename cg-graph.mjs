@@ -4,6 +4,8 @@ import { Command } from 'commander'
 
 const program = new Command()
 
+program.name('cg graph')
+
 program.command('product', 'Manage products')
 program.command('product-node-type', 'Manage product node types')
 program.command('product-tree', 'Manage product trees')

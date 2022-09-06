@@ -6,7 +6,10 @@ import { useProductMutations, useProductQueries } from './src/graph/useProductAc
 import { exit } from 'node:process'
 import { argDescriptions } from './src/strings.js'
 import { chalk } from 'zx'
+
 const program = new Command()
+
+program.name('cg graph product-node-type')
 
 program.command('copy')
 	.description('Copy product tree node types')

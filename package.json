@@ -6,7 +6,7 @@
   "type": "module",
   "repository": "https://github.com/CoverGo/cover-cli",
   "bin": {
-    "cgcli": "./cgcli"
+    "cg": "cg.mjs"
   },
   "scripts": {
     "release": "release-it"

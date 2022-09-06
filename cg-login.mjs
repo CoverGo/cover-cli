@@ -8,6 +8,8 @@ import { argDescriptions } from './src/strings.js'
 
 const program = new Command()
 
+program.name('cg login')
+
 program
 	.command('login', 'Get API ket and set active tenant')
 	.argument('<alias>', argDescriptions.alias)

@@ -9,6 +9,8 @@ import { useTenantApi } from './src/graph/api/useTenantApi.mjs'
 import { chalk } from 'zx'
 const program = new Command()
 
+program.name('cg graph tenant')
+
 program.command('initialize')
 	.description('Initialize a new tenant')
 	.argument('<admin tenant>', argDescriptions.superAdminTenant)

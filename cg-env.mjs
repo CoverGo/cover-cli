@@ -9,6 +9,8 @@ import { argDescriptions } from './src/strings.js'
 
 const program = new Command()
 
+program.name('cg env')
+
 program
 	.command('config')
 	.description('Configure a new environment')
