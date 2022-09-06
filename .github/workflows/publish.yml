@@ -1,4 +1,4 @@
-name: Test and Publish
+name: Publish
 
 on:
   push:
@@ -11,30 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Setup node and registry url
-        uses: actions/setup-node@v1
-        with:
-          node-version: 17
-          registry-url: https://npm.pkg.github.com/
-          scope: "@CoverGo"
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'covergomachine1'
-          git config --global user.email 'machine@covergo.com'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        run: |
-          yarn
-
-      - name: Publish package
-        run: |
-          yarn publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

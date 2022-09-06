@@ -1,0 +1,960 @@
+[
+  {
+    "id": "cc53cf8ea4de48bab010a221fd8abd23",
+    "ref": "",
+    "alias": null,
+    "type": "product",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "currencyCode",
+        "alias": "Currency Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "grossPrice",
+        "alias": "Gross Price",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_UNIT_PRICES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "taxes",
+        "alias": "Taxes",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_TAXES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "taxesSum",
+        "alias": "Taxes Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_TAXES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "loadings",
+        "alias": "Loadings",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_LOADINGS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "loadingsSum",
+        "alias": "Loadings Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_LOADINGS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "fees",
+        "alias": "Fees",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_FEES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "feesSum",
+        "alias": "Fees Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_FEES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "commissions",
+        "alias": "Commissions",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_COMMISSIONS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "commissionsSum",
+        "alias": "Commissions Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_COMMISSIONS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "discounts",
+        "alias": "Discounts",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_DISCOUNTS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "discountsSum",
+        "alias": "Discounts Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_DISCOUNTS()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "excesses",
+        "alias": "Excesses",
+        "type": "String",
+        "resolver": {
+          "text": "AGGREGATE_EXCESSES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "excessesSum",
+        "alias": "Excesses Sum",
+        "type": "String",
+        "resolver": {
+          "text": "SUM_EXCESSES()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "netPrice",
+        "alias": "Net Price",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "modalNetPrice",
+        "alias": "Modal Net Price",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "pricing",
+        "alias": "Pricing",
+        "type": "String",
+        "resolver": {
+          "text": "PRICING_SUMMARY()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "coverage",
+        "alias": "Coverage",
+        "type": "String",
+        "resolver": {
+          "text": "COVERAGE_SUMMARY()",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "underwriting",
+        "alias": "Underwriting",
+        "type": "String",
+        "resolver": {
+          "text": "UNDERWRITING_SUMMARY()",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "da76a8001cb64a278d97b65b9b62fa98",
+    "ref": "",
+    "alias": null,
+    "type": "benefit",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "explanation",
+        "alias": "Explanation",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "extra",
+        "alias": "Extra",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "6579c413f2d943b49be68478647271b1",
+    "ref": "",
+    "alias": null,
+    "type": "if",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "condition",
+        "alias": "Condition",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "d92829af34c8431d9792acb040d06d29",
+    "ref": "",
+    "alias": null,
+    "type": "unitPrice",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "cdfd5b87a3b646f19c0ec40ae90bc9f7",
+    "ref": "",
+    "alias": null,
+    "type": "worksheet",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "86b5df62b6614491b84ae2fec02bd7d8",
+    "ref": "",
+    "alias": null,
+    "type": "tax",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "type",
+        "alias": "Type",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "b47b27f3dda142fcbdd3a7c97aff7632",
+    "ref": "",
+    "alias": null,
+    "type": "underwritingRejection",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "explanation",
+        "alias": "Explanation",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "5a7c8387a36b48cf9d150036cfe89e3f",
+    "ref": "",
+    "alias": null,
+    "type": "limit",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "24e8e292927a45dbafe2ad5a15b7065c",
+    "ref": "",
+    "alias": null,
+    "type": "loading",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "type",
+        "alias": "Type",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "6ea1847c94e34bd99d4258cdeecf9b5e",
+    "ref": "",
+    "alias": null,
+    "type": "taxesContainer",
+    "parent": null,
+    "fields": null
+  },
+  {
+    "id": "ab8bd4f33f3e4b578febe4409462992a",
+    "ref": "",
+    "alias": null,
+    "type": "plan",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "id",
+        "alias": "ID",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "5e8f18a331f84c0cb229bc1ef64deafd",
+    "ref": "",
+    "alias": null,
+    "type": "coverageContainer",
+    "parent": null,
+    "fields": null
+  },
+  {
+    "id": "f04819f47cd84db487900221da29c163",
+    "ref": "",
+    "alias": null,
+    "type": "excess",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "explanation",
+        "alias": "Explanation",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "7a93a82c50424993991779deaf483309",
+    "ref": "",
+    "alias": null,
+    "type": "commission",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "referenceId",
+        "alias": "Reference Id",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "type",
+        "alias": "Type",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dbe14cd7e7e844858ff13bfd576e789f",
+    "ref": "",
+    "alias": null,
+    "type": "discount",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "recurrent",
+        "alias": "Recurrent",
+        "type": "String",
+        "resolver": {
+          "text": "false",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "startDate",
+        "alias": "Start Date",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "endDate",
+        "alias": "End Date",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "type",
+        "alias": "Type",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "2cac64efd5434ecc9510d67900b804e0",
+    "ref": "",
+    "alias": null,
+    "type": "variable",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "8541601110534990bbc3dbfb1defc556",
+    "ref": "",
+    "alias": null,
+    "type": "underwritingManualApproval",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "explanation",
+        "alias": "Explanation",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "15bf57886def4f4a96eecaf7b42c8276",
+    "ref": "",
+    "alias": null,
+    "type": "fee",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "type",
+        "alias": "Type",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "value",
+        "alias": "Value",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      },
+      {
+        "ref": "amount",
+        "alias": "Amount",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "MATHJS"
+        }
+      }
+    ]
+  },
+  {
+    "id": "557bb57a43fa47d59f4588dfe816dc58",
+    "ref": "",
+    "alias": null,
+    "type": "exclusion",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "code",
+        "alias": "Code",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "name",
+        "alias": "Name",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "description",
+        "alias": "Description",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      },
+      {
+        "ref": "explanation",
+        "alias": "Explanation",
+        "type": "String",
+        "resolver": {
+          "text": "",
+          "language": "CONSTANT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "85638cfa0e444cb7b5da02c7fe401585",
+    "ref": "",
+    "alias": null,
+    "type": "testNodeType",
+    "parent": null,
+    "fields": [
+      {
+        "ref": "description",
+        "alias": "null",
+        "type": "string",
+        "resolver": null
+      }
+    ]
+  }
+]

@@ -1,11 +1,11 @@
-import os from "node:os";
-import * as fs from 'node:fs/promises';
+import os from 'node:os'
+import * as fs from 'node:fs/promises'
 import mkdirp from 'mkdirp'
 
 const userHomeDir = os.homedir()
 const configDir = `${userHomeDir}/.config/cover-cli`
 
-class DirectoryNotAccessibleError extends Error {
+export class DirectoryNotAccessibleError extends Error {
 	constructor(path) {
 		super(`Directory at \`${path}\` does is not accessible.`)
 	}
@@ -16,19 +16,13 @@ export async function getConfigDir() {
 		await fs.access(configDir)
 	} catch {
 		mkdirp(configDir)
-	}
-
-	// try again
-	try {
-		await fs.access(configDir)
-	} catch {
-		throw new DirectoryNotAccessibleError(configDir)
+		return configDir
 	}
 
 	return configDir
 }
 
-export async function getConfigForTenant(name) {
+export async function getConfigForEnv() {
 	const configDir = await getConfigDir()
-	return `${configDir}/${name}.tenant`
+	return `${configDir}/config.yaml`
 }
