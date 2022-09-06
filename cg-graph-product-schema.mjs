@@ -41,11 +41,7 @@ program
 			exit(1)
 		}
 
-<<<<<<< HEAD
 		console.log(chalk.blue(`Create data schema \`${targetProductId}\` from tenant \`${targetAlias}\`.`))
-=======
-		console.log(chalk.blue(`Create data schema \`${targetAlias}\` from tenant \`${targetProductId}\`.`))
->>>>>>> 757f2ea741cec0b4317d6f159ec38f664fc41e0f
 		const schemaId = await mutations.createProductDataSchema(targetProduct.productTreeId, schema.dataSchema)
 
 		console.log(chalk.blue(`Create product UI schema for tree \`${targetProduct.productTreeId}\` on associated with data schema \`${schemaId}\`.`))
