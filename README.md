@@ -228,7 +228,13 @@ There's only one option for product schemas and that is `copy` which will take t
 cg graph product-schema copy dev product/type/1 uat product/type/1
 ```
 
-This will 
+#### Files
+
+Copying a file from one tenant to another.
+
+```shell
+cg graph file copy tenant-a source/filename.txt tenant-b dest/filename.txt
+```
 
 #### Product
 
