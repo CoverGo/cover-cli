@@ -19,7 +19,7 @@ program
 	.action(async (alias, options) => {
 		const endpoint = options.endpoint
 			? options.endpoint
-			: await question(chalk.bold.blue(`What's the endpoint for this environment? `))
+			: await question(chalk.bold.blue(`What's the URL for this environment? `))
 
 		const validation = z.object({
 			alias: z.string().min(1).regex(/[a-zA-Z0-9\-:_]/, { message: "Alias can only contain alphanumeric, -, : and _" }),

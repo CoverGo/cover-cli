@@ -61,7 +61,7 @@ Environments are just GraphQL endpoints but one environment can have many tenant
 cg env config my-env
 ```
 
-This will then ask you to enter an endpoint and create a configuration file in your home directory under `.config/cover-cli`. You may also provide the endpoint as a flag to use in automation, check the command help for more information.
+This will then ask you to enter an endpoint and create a configuration file in your home directory under `.config/cover-cli`. You may also provide the endpoint as a flag to use in automation, check the command help for more information. The endpoint is the base URL of the API.
 
 There are a few utility commands to manage environments, most should be fairly self-explanatory but if you get stuck you can always use the `-h` flag on any subcommand.
 

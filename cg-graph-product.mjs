@@ -3,7 +3,7 @@
 import { Command } from 'commander'
 import { argDescriptions } from './src/strings.js'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
-import { useProductMutations, useProductQueries } from './src/graph/useProductActions.mjs'
+import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 
