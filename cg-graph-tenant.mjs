@@ -11,8 +11,8 @@ const program = new Command()
 
 program.name('cg graph tenant')
 
-program.command('initialize')
-	.description('Initialize a new tenant')
+program.command('create')
+	.description('Create a new tenant')
 	.argument('<admin tenant>', argDescriptions.superAdminTenant)
 	.requiredOption('-t, --tenant-id <tenant id>', 'The configured tenant id')
 	.requiredOption('-u, --username <username>', 'Username used to get access token for the tenant')
@@ -29,7 +29,7 @@ program.command('initialize')
 		const fsConfig = JSON.parse(options.fs)
 
 		const redirectUris = [
-			`https://${options.host}/new-password`,
+			`https://${options.host}/reset-password`,
 			`https://${options.host}/reset-password`
 		]
 

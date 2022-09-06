@@ -24,7 +24,7 @@ program
 	.action(async (alias, env, options) => {
 		const config = await getConfig()
 		if (!config.environments?.[env]) {
-			console.error(chalk.bold.red(`Unable to find environment \`${env}\`, check the environments listed in \`cgcli env list\`.`))
+			console.error(chalk.bold.red(`Unable to find environment \`${env}\`, check the environments listed in \`cg env list\`.`))
 			exit(1)
 		}
 

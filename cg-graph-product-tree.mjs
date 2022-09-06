@@ -55,8 +55,8 @@ program
 program
 	.command('export')
 	.description('Export product tree nodes')
-	.argument('<tenant alias>', 'Alias of a tenant configured with `cgcli config tenant create`')
-	.argument('<productId>', 'The product ID you wish to export nodes from.')
+	.argument('<tenant alias>', argDescriptions.alias)
+	.argument('<productId>', argDescriptions.productId)
 	.action(async (alias, productId) => {
 		const sourceContext = await useProductApi(alias)
 		const queries = useProductQueries(sourceContext)

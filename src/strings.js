@@ -3,7 +3,7 @@ export const argDescriptions = {
 	productTreeId: 'Product root node ID',
 	productSchemaId: 'Product schema ID',
 	superAdminTenant: 'Super admin tenant for tenant creation',
-	alias: 'Alias of a tenant configured with `cgcli tenant config`',
+	alias: 'Alias of a tenant configured with `cg tenant config`',
 	sourceAlias: 'Source tenant alias',
 	targetAlias: 'Destination tenant alias',
 	nodeTypes: 'JSON string representing types to import from exported list',

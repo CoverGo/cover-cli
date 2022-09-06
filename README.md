@@ -9,7 +9,7 @@ This package provides a simple command line interface for CoverGo APIs.
 
 ## Installation
 
-Currently, only manual installation is supported. We will look into proper packaging on NPM at a later date as the tool grows.
+Currently, only manual installation is supported. We will be looking into proper packaging on NPM at a later date.
 
 ### Yarn (Recommended)
 
@@ -208,7 +208,7 @@ cg graph product-tree import tenant-b "$(<nodes.json)"
 Once we have a new tree imported or copied the script will provide you with the root ID in the final output.
 
 ```shell
-➜ cg graph product-tree copy axa-dev axa-dev Testing/Travel/2
+➜ cg graph product-tree copy dev dev "product/type/version"
 Copy product tree `product/type/version` from tenant `dev` to `dev`.
 
  ████████████████████████████████████████ 100% | ETA: 0s | 44/44
@@ -218,10 +218,30 @@ Newly created root node: 65aca46d8a95a4b9f88d98efb0276889
 Done!
 ```
 
-You can then 
+You can then assign this tree to a product using the `cg graph product assign-tree` subcommand detailed in the "Product" subheading below.
+
+#### Product Schema
+
+There's only one option for product schemas and that is `copy` which will take the product schema and associated product ui schema and then copy it to another product.
+
+```shell
+cg graph product-schema copy dev product/type/1 uat product/type/1
+```
+
+This will 
 
 #### Product
 
 The `cg graph product` subcommand is used for copying entire products between environments. This will include, trees, schemas and of course the product itself.
 
 The product ID provided on the target environment must not exist and the node types the tree is based on must also be there for this to work.
+
+```shell
+cg graph product copy dev product/type/1 uat product/type/1
+```
+
+Sometimes you may need to reassign a product tree to a given product (including product schemas) so for that there is one more utility method `assign-tree`.
+
+```shell
+cg graph product assign-tree dev product/type/version 65aca46d8a95a4b9f88d98efb0276889
+```

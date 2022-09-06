@@ -15,9 +15,10 @@ program
 	.command('copy')
 	.description('Copy from one environment to another')
 	.argument('<tenant source alias>', argDescriptions.sourceAlias)
+	.argument('<source product id>', argDescriptions.productId)
 	.argument('<tenant target alias>', argDescriptions.targetAlias)
-	.argument('<productId>', argDescriptions.productId)
-	.action(async (sourceAlias, targetAlias, productId) => {
+	.argument('<target product id>', argDescriptions.productId)
+	.action(async (sourceAlias, sourceProductId, targetAlias, targetProductId) => {
 		try {
 			const sourceContext = await useProductApi(sourceAlias)
 			const targetContext = await useProductApi(targetAlias)
@@ -25,19 +26,21 @@ program
 			const queries = useProductQueries(sourceContext)
 			const mutations = useProductMutations(targetContext)
 
-			console.log(chalk.blue(`${chalk.bold(`1/8:`)} Fetch \`${productId}\` from tenant \`${sourceAlias}\`.`))
-			const product = await queries.fetchProduct(productId)
+			console.log(chalk.blue(`${chalk.bold(`1/8:`)} Fetch \`${sourceProductId}\` from tenant \`${sourceAlias}\`.`))
+			const product = await queries.fetchProduct(sourceProductId)
 
-			console.log(chalk.blue(`${chalk.bold(`2/8:`)} Creating product \`${productId}\` on tenant \`${targetAlias}\`.`))
+			const [plan, type, version] = targetProductId.split('/')
+			product.productId = { plan, type, version }
+			console.log(chalk.blue(`${chalk.bold(`2/8:`)} Creating product \`${targetProductId}\` on tenant \`${targetAlias}\`.`))
 			const productCopy = await mutations.createProduct(product)
 
 			console.log(chalk.blue(`${chalk.bold(`3/8:`)} Fetch product tree \`${product.productTreeId}\` from tenant \`${sourceAlias}\`.`))
 			const productTree = await queries.fetchProductTree(product)
 
-			console.log(chalk.blue(`${chalk.bold(`4/8:`)} Copying node(s) from product \`${productId}\` to tenant \`${targetAlias}\`.`))
+			console.log(chalk.blue(`${chalk.bold(`4/8:`)} Copying node(s) from product \`${sourceProductId}\` to \`${targetProductId}\` on \`${targetAlias}\`.`))
 			const rootNode = await mutations.createProductTree(productTree)
 
-			console.log(chalk.blue(`${chalk.bold(`5/8:`)} Updating \`${productId}\` with productTreeId \`${rootNode}\` on \`${targetAlias}\`.`))
+			console.log(chalk.blue(`${chalk.bold(`5/8:`)} Updating \`${targetProductId}\` with productTreeId \`${rootNode}\` on \`${targetAlias}\`.`))
 			await mutations.updateProductTreeIdOnProduct(product, rootNode)
 
 			console.log(chalk.blue(`${chalk.bold(`6/8:`)} Fetching data schemas for \`${product.productTreeId}\`.`))
