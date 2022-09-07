@@ -43,17 +43,24 @@ program
 			console.log(chalk.blue(`${chalk.bold(`5/8:`)} Updating \`${targetProductId}\` with productTreeId \`${rootNode}\` on \`${targetAlias}\`.`))
 			await mutations.updateProductTreeIdOnProduct(product, rootNode)
 
-			console.log(chalk.blue(`${chalk.bold(`6/8:`)} Fetching data schemas for \`${product.productTreeId}\`.`))
-			const schema = await queries.fetchProductSchema(product.productTreeId)
+			let schema = null
+			try {
+				console.log(chalk.blue(`${chalk.bold(`6/8:`)} Fetching data schemas for \`${product.productTreeId}\`.`))
+				schema = await queries.fetchProductSchema(product.productTreeId)
+			} catch (e) {
+				console.warn(chalk.yellow(`No data schema found for \`${product.productTreeId}\`. Skipping copy of data schema.`))
+			}
 
-			console.log(chalk.blue(`${chalk.bold(`7/8:`)} Create product schema for tree \`${rootNode}\`.`))
-			const schemaId = await mutations.createProductDataSchema(rootNode, schema.dataSchema)
+			if (schema) {
+				console.log(chalk.blue(`${chalk.bold(`7/8:`)} Create product schema for tree \`${rootNode}\`.`))
+				const schemaId = await mutations.createProductDataSchema(rootNode, schema.dataSchema)
 
-			console.log(chalk.blue(`${chalk.bold(`8/8:`)} Create product UI schema for tree \`${rootNode}\`.`))
-			const uiSchemas = schema?.uiSchemas ?? []
-			for (const uiSchema of uiSchemas) {
-				if (uiSchema?.name === productCopy.productTreeId) {
-					await mutations.createProductUiDataSchema(schemaId, rootNode, uiSchema.schema)
+				console.log(chalk.blue(`${chalk.bold(`8/8:`)} Create product UI schema for tree \`${rootNode}\`.`))
+				const uiSchemas = schema?.uiSchemas ?? []
+				for (const uiSchema of uiSchemas) {
+					if (uiSchema?.name === productCopy.productTreeId) {
+						await mutations.createProductUiDataSchema(schemaId, rootNode, uiSchema.schema)
+					}
 				}
 			}
 
