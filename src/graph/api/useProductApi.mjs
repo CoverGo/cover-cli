@@ -75,24 +75,40 @@ export async function useProductApi(alias) {
 				$productId: productIdInput!,
 				$lifecycleStage: String = null,
 				$productTreeId: String = null,
+				$name: String = null,
+				$productIdKey: String!,
 			) {
 				createProduct(product: {
 					productId: $productId,
 					lifecycleStage: $lifecycleStage,
-					productTreeId: $productTreeId,
+					productTreeId: $productTreeId
 				}) {
 					productId {
 						plan
 						type
 						version
 					}
+					name
 					lifecycleStage
 					productTreeId
+				}
+				upsertL10n(l10n: {
+					locale: "en-US",
+					key: $productIdKey,
+					value: $name
+				}) {
+					status
+					errors
 				}
 			}
 		`
 
-		const response = await request(query, { ...product })
+		console.log(`products-${product.productId.plan}|${product.productId.type}|${product.productId.version}-name`, product.name)
+
+		const response = await request(query, {
+			...product,
+			productIdKey: `products-${product.productId.plan}|${product.productId.version}|${product.productId.type}-name`
+		})
 		return response?.createProduct
 	}
 
@@ -213,6 +229,7 @@ export async function useProductApi(alias) {
 						type
 						version
 					}
+					name
 					lifecycleStage
 					productTreeId
 				}
