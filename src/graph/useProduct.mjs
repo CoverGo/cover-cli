@@ -145,6 +145,7 @@ export const useProductMutations = (apiContext) => {
 				bar.stop()
 			}
 		} catch (e) {
+			console.error(chalk.red(`Failed to create product tree. Product has not been created. Try again and if the problem persists, contact support.`))
 			handleExceptionInQuery(e)
 		}
 
