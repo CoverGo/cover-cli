@@ -103,8 +103,6 @@ export async function useProductApi(alias) {
 			}
 		`
 
-		console.log(`products-${product.productId.plan}|${product.productId.type}|${product.productId.version}-name`, product.name)
-
 		const response = await request(query, {
 			...product,
 			productIdKey: `products-${product.productId.plan}|${product.productId.version}|${product.productId.type}-name`
