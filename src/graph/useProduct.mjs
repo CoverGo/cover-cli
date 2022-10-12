@@ -90,69 +90,54 @@ export const useProductMutations = (apiContext) => {
 		}
 	}
 
-	async function createProductTree(productTree) {
-		const totalQueries = productTree.length + productTree.reduce((acc, cur) => acc + cur?.fields?.length ?? 0, 0)
-		const idMap = {}
-		let rootNode = null
-
-		try {
-			if (productTree.length) {
-				console.log('')
-				const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-				bar.start(totalQueries, 0)
-
-				let completed = 0
-
-				// make sure we execute these one at a time, do not spam the server with requests
-				for (const node of productTree) {
-					const id = generateId()
-					if (!rootNode) {
-						rootNode = id
-					}
-
-					idMap[node.id] = id
-
-					await apiContext.createNode(
-						id,
-						node.ref,
-						node.type,
-						node.alias,
-						node?.parent?.id ? { parentId: idMap[node.parent.id] } : null,
-						[
-							{
-								type: "String",
-								ref: "meta",
-								alias: "Meta",
-								resolver: {
-									text: "",
-									language: "CONSTANT"
-								}
-							}
-						]
-					)
-
-					completed++
-
-					bar.update(completed)
-					const fields = node.fields ? node.fields : []
-					for (const field of fields) {
-						await apiContext.attachFieldResolver(idMap[node.id], field.ref, field.resolver.text, field.resolver.language)
-						completed++
-						bar.update(completed)
-					}
+	function generateChildren(parent, tree) {
+		return tree
+			.filter(node => node.parent?.id === parent.id)
+			.map(node => {
+				const id = generateId()
+				const { ref, alias, type, fields } = node
+				return {
+					id,
+					ref,
+					alias,
+					type,
+					fields,
+					children: generateChildren(node, tree)
 				}
+			})
+	}
 
-				bar.stop()
-			}
+	async function createProductTree(productTree) {
+		const newRootId = generateId()
+		const [firstNode, ...rest] = productTree
+		try {
+			await apiContext.createNode(
+				newRootId,
+				firstNode.ref,
+				firstNode.type,
+				firstNode.alias,
+				generateChildren(firstNode, rest),
+				firstNode.fields ?? [
+					{
+						type: "String",
+						ref: "meta",
+						alias: "Meta",
+						resolver: {
+							text: "",
+							language: "CONSTANT"
+						}
+					}
+				]
+			)
 		} catch (e) {
 			console.error(chalk.red(`Failed to create product tree. Product has not been created. Try again and if the problem persists, contact support.`))
 			handleExceptionInQuery(e)
 		}
 
 		console.log('')
-		console.log(chalk.green(`${chalk.bold('Newly created root node:')} ${rootNode}`))
+		console.log(chalk.green(`${chalk.bold('Newly created root node:')} ${newRootId}`))
 
-		return rootNode
+		return newRootId
 	}
 
 	function updateProductTreeIdOnProduct(product, productTreeId) {
