@@ -110,22 +110,22 @@ export async function useProductApi(alias) {
 		return response?.createProduct
 	}
 
-	async function createNode(id, ref, type, alias, position, fields) {
+	async function createNode(id, ref, type, alias, children, fields) {
 		const query = gql`
 			mutation importNode(
 				$id: ID!,
 				$ref: String!,
 				$type: String!,
 				$alias: String!,
-				$position: NodePositionInput,
-				$fields: [NodeFieldInput!]
+				$children: [CreateNodeInput!],
+				$fields: [NodeFieldInput!],
 			) {
 				createNode(node: {
 					id: $id
 					ref: $ref
 					type: $type
 					alias: $alias
-					position: $position
+					children: $children,
 					fields: $fields
 				})
 			}
@@ -136,7 +136,7 @@ export async function useProductApi(alias) {
 			ref,
 			type,
 			alias,
-			position,
+			children,
 			fields
 		}
 

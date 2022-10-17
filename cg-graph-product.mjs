@@ -99,4 +99,59 @@ program
 		}
 	})
 
+program
+	.command('sync')
+	.description('Sync a product from one environment to another')
+	.argument('<tenant source alias>', argDescriptions.sourceAlias)
+	.argument('<source product id>', argDescriptions.productId)
+	.argument('<tenant target alias>', argDescriptions.targetAlias)
+	.argument('<target product id>', argDescriptions.productId)
+	.action(async (sourceAlias, sourceProductId, targetAlias, targetProductId) => {
+		try {
+			const sourceContext = await useProductApi(sourceAlias)
+			const targetContext = await useProductApi(targetAlias)
+
+			const queries = useProductQueries(sourceContext)
+			const targetQueries = useProductQueries(targetContext)
+			const mutations = useProductMutations(targetContext)
+
+			console.log(chalk.blue(`Fetch \`${sourceProductId}\` from tenant \`${sourceAlias}\`.`))
+			const product = await queries.fetchProduct(sourceProductId)
+
+			console.log(chalk.blue(`Fetch \`${targetProductId}\` from tenant \`${targetAlias}\`.`))
+			const targetProduct = await targetQueries.fetchProduct(targetProductId)
+
+			if (!product.productTreeId) {
+				console.error(chalk.bold.red(`Product \`${sourceProductId}\` has no associated product tree!`))
+				exit(1)
+			}
+
+			console.log(chalk.blue(`Copy product tree \`${product.productTreeId}\` from tenant \`${sourceAlias}\` to \`${targetAlias}\`.`))
+			const productTree = await queries.fetchProductTree(product)
+			const productTreeId = await mutations.createProductTree(productTree)
+
+			console.log(chalk.blue(`Updating \`${targetProductId}\` with productTreeId \`${productTreeId}\` on \`${targetAlias}\`.`))
+			await mutations.updateProductTreeIdOnProduct(targetProduct, productTreeId)
+
+			console.log(chalk.blue(`Fetching data schemas for \`${product.productTreeId}\`.`))
+			const schema = await queries.fetchProductSchema(product.productTreeId)
+
+			console.log(chalk.blue(`Create data schema \`${targetProductId}\` from tenant \`${targetAlias}\`.`))
+			const schemaId = await mutations.createProductDataSchema(productTreeId, schema.dataSchema)
+
+			console.log(chalk.blue(`Create product UI schema for tree \`${productTreeId}\` associated with data schema \`${schemaId}\`.`))
+			const uiSchemas = schema?.uiSchemas ?? []
+			for (const uiSchema of uiSchemas) {
+				if (uiSchema?.name === product.productTreeId) {
+					await mutations.createProductUiDataSchema(schemaId, productTreeId, uiSchema.schema)
+				}
+			}
+
+			exit(0)
+		} catch (e) {
+			console.error(chalk.red.bold(e.message))
+			exit(1)
+		}
+	})
+
 program.parse()
