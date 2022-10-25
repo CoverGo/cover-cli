@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
-const program = new Command();
+import { Command } from 'commander'
+const program = new Command()
 
 program
 	.name('cg')
@@ -10,6 +10,5 @@ program
 	.command('graph', 'Interact with the graph API')
 	.command('env', 'Manage environments')
 	.command('tenant', 'Manage tenants')
-	// .command('login', 'Change the active tenant')
 
 program.parse()

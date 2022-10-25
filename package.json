@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "axios-debug-log": "^0.8.4",
     "cli-progress": "^3.11.2",
     "commander": "^9.4.0",
     "form-data": "^4.0.0",
