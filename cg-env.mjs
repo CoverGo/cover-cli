@@ -1,86 +1,63 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { chalk, question } from 'zx'
-import { z } from 'zod'
-import { displayValidationErrors } from './src/validation/error.mjs'
+import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { getConfig, writeConfig } from './src/config/config.mjs'
 import { argDescriptions } from './src/strings.js'
+import { error, info, success } from './src/log.mjs'
 
 const program = new Command()
 
 program.name('cg env')
 
 program
-	.command('config')
-	.description('Configure a new environment')
-	.argument('<alias>', argDescriptions.alias)
-	.option('-e, --endpoint <endpoint>', argDescriptions.endpoint)
-	.action(async (alias, options) => {
-		const endpoint = options.endpoint
-			? options.endpoint
-			: await question(chalk.bold.blue(`What's the URL for this environment? `))
-
-		const validation = z.object({
-			alias: z.string().min(1).regex(/[a-zA-Z0-9\-:_]/, { message: "Alias can only contain alphanumeric, -, : and _" }),
-			endpoint: z.string().url(),
-		})
-
-		const inputs = {
-			alias,
-			endpoint
-		}
-
-		try {
-			validation.parse(inputs)
-		} catch (e) {
-			displayValidationErrors(e.issues)
-			exit(1)
-		}
-
+	.command('create')
+	.description('Create a new environment.')
+	.requiredOption('-n, --name <name>', 'Name of the environment you want to create. This will be used as an alias for other commands.')
+	.requiredOption('-e, --endpoint <endpoint>', 'Base URL for the GraphQL API. e.g. https://api.example.com.')
+	.action(async (options) => {
 		const config = await getConfig()
 		const environments = config?.environments ?? {}
-		environments[alias] = { endpoint }
+		environments[options.name] = { endpoint: options.endpoint }
 		config.environments = environments
 		await writeConfig(config)
 
-		console.log('')
-		console.log(chalk.green.bold(`New environment \`${alias}\` created!`))
-		console.log(chalk.blue(`${chalk.bold('Endpoint')}: ${endpoint}`))
+		success(`env:create`, `Created environment ${chalk.bold(options.name)}.`)
 		exit(0)
 	})
 
 program.command('info')
-	.description('Show details of a specific environment')
-	.argument('<alias>', argDescriptions.alias)
-	.action(async (alias) => {
+	.description('Show details of a configured environment.')
+	.argument('<name>', argDescriptions.name)
+	.action(async (name) => {
 		const config = await getConfig()
 		const environments = config?.environments ?? {}
 
-		if (environments[alias]) {
-			console.log(chalk.blue(`${chalk.bold('Endpoint')}: ${environments[alias]?.endpoint ?? ''}`))
+		if (environments[name]) {
+			console.log(name)
+			console.log(environments[name].endpoint)
 			exit(0)
 		}
 
-		console.error(chalk.bold.red(`Environment \`${alias}\` not found!`))
+		error(`env:info`, `Environment ${chalk.bold(name)} does not exist.`)
 		exit(1)
 	})
 
 program.command('delete')
-	.description('Remove and environment configuration')
-	.argument('<alias>', argDescriptions.alias)
-	.action(async (alias) => {
+	.description('Remove an environment configuration.')
+	.argument('<name>', 'The name of the endpoint you want to delete')
+	.action(async (name) => {
 		const config = await getConfig()
 
-		if (config?.environments?.[alias]) {
-			delete config.environments[alias]
+		if (config?.environments?.[name]) {
+			delete config.environments[name]
 			await writeConfig(config)
 
-			console.log(chalk.green.bold(`Environment \`${alias}\` removed!`))
+			success(`env:delete`, `Deleted environment ${chalk.bold(name)}.`)
 			exit(0)
 		}
 
-		console.error(chalk.bold.red(`Environment \`${alias}\` not found!`))
+		error(`env:delete`, `Environment ${chalk.bold(name)} does not exist.`)
 		exit(1)
 	})
 
@@ -92,7 +69,7 @@ program.command('list')
 
 		const envs = Object.keys(environments)
 		for (const env of envs) {
-			console.log(chalk.blue(env))
+			console.log(env)
 		}
 
 		exit(0)
