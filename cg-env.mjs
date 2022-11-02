@@ -3,12 +3,11 @@ import { Command } from 'commander'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { getConfig, writeConfig } from './src/config/config.mjs'
-import { argDescriptions } from './src/strings.js'
 import { error, info, success } from './src/log.mjs'
 
 const program = new Command()
 
-program.name('cg env')
+program.name('covergo env')
 
 program
 	.command('create')
@@ -28,7 +27,7 @@ program
 
 program.command('info')
 	.description('Show details of a configured environment.')
-	.argument('<name>', argDescriptions.name)
+	.argument('<name>', 'Name of the environment.')
 	.action(async (name) => {
 		const config = await getConfig()
 		const environments = config?.environments ?? {}
