@@ -4,7 +4,7 @@ import { Command } from 'commander'
 
 const program = new Command()
 
-program.name('cg graph')
+program.name('covergo graph')
 
 program.command('product', 'Manage products')
 program.command('product-node-type', 'Manage product node types')
