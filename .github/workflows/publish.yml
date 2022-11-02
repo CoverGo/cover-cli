@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:        
-      - '*' 
+      - '*'
 
 jobs:
   publish-npm:
@@ -11,6 +11,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: |
+          npm ci --omit=dev --ignore-scripts
+
+      - name: Publish package
+        run: |
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
