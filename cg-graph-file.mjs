@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import { argDescriptions } from './src/strings.js'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
@@ -10,7 +9,7 @@ import { info, success } from './src/log.mjs'
 
 const program = new Command()
 
-program.name('cg graph file')
+program.name('covergo graph file')
 
 program
 	.command('copy')
