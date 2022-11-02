@@ -8,7 +8,7 @@ import { error, info, success, warn } from './src/log.mjs'
 
 const program = new Command()
 
-program.name('cg tenant')
+program.name('covergo tenant')
 
 program
 	.command('create')
