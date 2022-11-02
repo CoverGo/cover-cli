@@ -46,9 +46,11 @@ export const useProductQueries = (apiContext) => {
 		}
 	}
 
-	function fetchAllNodeTypes() {
+	async function fetchAllNodeTypes() {
 		try {
-			return apiContext.fetchAllNodeTypes()
+			const result = await apiContext.fetchAllNodeTypes()
+			handleApiMessageError('query:fetchAllNodeTypes', result.data)
+			return result.data.data.nodeTypes
 		} catch (e) {
 			handleErrorResponse('query:fetchAllNodeTypes', e)
 		}
@@ -125,7 +127,7 @@ export const useProductMutations = (apiContext) => {
 				bar.stop()
 			}
 		} catch (e) {
-			handleExceptionInQuery(e)
+			handleErrorResponse('mutation:createNodeTypes', e)
 		}
 	}
 
