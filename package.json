@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "type": "module",
+  "private": false,
   "repository": "https://github.com/CoverGo/cover-cli",
   "bin": {
     "covergo": "cg.mjs"
