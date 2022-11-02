@@ -1,38 +1,42 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import { argDescriptions } from './src/strings.js'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
 import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
+import { info, success } from './src/log.mjs'
 
 const program = new Command()
 
-program.name('cg graph file')
+program.name('covergo graph file')
 
 program
 	.command('copy')
-	.description('Copy files from one tenant to another')
-	.argument('<tenant>', argDescriptions.sourceAlias)
-	.argument('<filename>', argDescriptions.copyFilename)
-	.argument('<tenant>', argDescriptions.targetAlias)
-	.argument('<filename>', argDescriptions.destinationFilename)
-	.action(async (sourceAlias, sourceFileName, targetAlias, destinationFileName) => {
+	.description('Copy a file from one tenant to another.')
+	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
+	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
+	.requiredOption('-f, --file <file>', 'Full path of the file to copy.')
+	.option('-m, --move <file>', 'Move the newly copied file to a different location.')
+	.action(async (options) => {
 		try {
-			const sourceContext = await useExternalTableApi(sourceAlias)
-			const targetContext = await useExternalTableApi(targetAlias)
+			const sourceContext = await useExternalTableApi(options.source)
+			const targetContext = await useExternalTableApi(options.destination)
+
 			const queries = useExternalTableQueries(sourceContext)
 			const mutations = useExternalTableMutations(targetContext)
 
-			console.log(chalk.blue(`Fetching file \`${sourceFileName}\` from tenant \`${sourceAlias}\``))
-			const data = await queries.fetchFile(sourceFileName)
+			info(`graph:copy:file`, `Fetch file ${chalk.bold(options.file)} from tenant ${chalk.bold(options.source)}.`)
+
+			const data = await queries.fetchFile(options.file)
+			const destinationFileName = options.move ? options.move : options.file
 			const [ filename, ...dirs ] = destinationFileName.split('/').reverse()
 			const directory = dirs.reverse().join('/')
-			console.log(chalk.blue(`Uploading file \`${destinationFileName}\` to tenant \`${targetAlias}\``))
+
+			info(`graph:copy:file`, `Uploading file ${chalk.bold(destinationFileName)} to ${chalk.bold(options.destination)}.`)
 			await mutations.createFile(directory, filename, data)
 
-			console.log(chalk.green.bold(`File \`${sourceFileName}\` copied to \`${destinationFileName}\`.`))
+			success(`graph:copy:file`, `Copied ${chalk.bold(destinationFileName)}!`)
 			exit(0)
 		} catch (e) {
 			console.error(chalk.red.bold(e.message))

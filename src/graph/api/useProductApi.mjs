@@ -29,8 +29,7 @@ export async function useProductApi(alias) {
 			}
 		`
 
-		const response = await request(query)
-		return response.nodeTypes
+		return await request(query)
 	}
 
 	async function createNodeType(nodeType) {
@@ -65,17 +64,16 @@ export async function useProductApi(alias) {
 			fields: fields
 		}
 
-		const response = await request(query, variables)
-		return response?.defineNodeType
+		return await request(query, variables)
 	}
 
 	async function createProduct(product) {
 		const query = gql`
-			mutation cloneProduct(
+			mutation createProduct(
 				$productId: productIdInput!,
 				$lifecycleStage: String = null,
 				$productTreeId: String = null,
-				$name: String = null,
+				$name: String!,
 				$productIdKey: String!,
 			) {
 				createProduct(product: {
@@ -103,11 +101,10 @@ export async function useProductApi(alias) {
 			}
 		`
 
-		const response = await request(query, {
+		return await request(query, {
 			...product,
 			productIdKey: `products-${product.productId.plan}|${product.productId.version}|${product.productId.type}-name`
 		})
-		return response?.createProduct
 	}
 
 	async function createNode(id, ref, type, alias, children, fields) {
@@ -140,33 +137,9 @@ export async function useProductApi(alias) {
 			fields
 		}
 
-		const response = await request(query, variables)
-		return response?.createNode
+		return await request(query, variables)
 	}
 
-	async function attachFieldResolver(nodeId, fieldName, text, language) {
-		const query = gql`
-			mutation attachResolver($nodeId: ID!, $fieldName: String!, $text: String!, $language: Language!) {
-				attachOrReplaceNodeFieldResolver(nodeId: $nodeId, input: {
-					fieldName: $fieldName,
-					resolver: {
-						text: $text,
-						language: $language
-					}
-				})
-			}
-		`
-
-		const variables = {
-			nodeId,
-			fieldName,
-			text,
-			language
-		}
-
-		const response = await request(query, variables)
-		return response?.attachFieldResolver
-	}
 
 	async function updateProductTreeId(productId, productTreeId) {
 		const query = gql`
@@ -182,8 +155,7 @@ export async function useProductApi(alias) {
 			productTreeId
 		}
 
-		const response = await request(query, variables)
-		return response?.updateProduct?.productTreeId
+		return await request(query, variables)
 	}
 
 	async function fetchProductTreeNodes(productTreeId) {
@@ -214,8 +186,7 @@ export async function useProductApi(alias) {
 			parentNodeId: productTreeId
 		}
 
-		const response = await request(query, variables)
-		return response.listNodes
+		return await request(query, variables)
 	}
 
 	async function fetchProduct(plan, type, version) {
@@ -250,11 +221,7 @@ export async function useProductApi(alias) {
 			}
 		}
 
-		const response = await request(query, variables)
-		const product = response?.products?.list?.[0]
-		if (product) {
-			return product
-		}
+		return await request(query, variables)
 	}
 
 	async function fetchProductSchema(productTreeId) {
@@ -276,8 +243,7 @@ export async function useProductApi(alias) {
 			nodeId: productTreeId
 		}
 
-		const response = await request(query, variables)
-		return response?.productSchema
+		return await request(query, variables)
 	}
 
 	async function createProductSchema(productTreeId, dataSchema) {
@@ -298,8 +264,7 @@ export async function useProductApi(alias) {
 			dataSchema
 		}
 
-		const response = await request(query, variables)
-		return response?.createProductSchema?.value
+		return await request(query, variables)
 	}
 
 	async function createUiProductSchema(productSchemaId, productTreeId, schema) {
@@ -324,8 +289,7 @@ export async function useProductApi(alias) {
 			schema: schema,
 		}
 
-		const response = await request(query, variables)
-		return response?.addUiSchemaToProductSchema?.status
+		return await request(query, variables)
 	}
 
 	return {
@@ -334,7 +298,6 @@ export async function useProductApi(alias) {
 		fetchProductTreeNodes,
 		fetchProduct,
 		createNode,
-		attachFieldResolver,
 		createProductSchema,
 		createUiProductSchema,
 		fetchProductSchema,

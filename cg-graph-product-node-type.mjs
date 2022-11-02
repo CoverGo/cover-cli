@@ -4,19 +4,22 @@ import { Command } from 'commander'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
 import { exit } from 'node:process'
-import { argDescriptions } from './src/strings.js'
 import { chalk } from 'zx'
+import { info, success } from './src/log.mjs'
 
 const program = new Command()
 
-program.name('cg graph product-node-type')
+program.name('covergo graph product-node-type')
 
 program.command('copy')
 	.description('Copy product tree node types')
-	.argument('<tenant source alias>', argDescriptions.sourceAlias)
-	.argument('<tenant target alias>', argDescriptions.targetAlias)
-	.action(async (sourceAlias, targetAlias) => {
-		console.log(`Copying node types from ${sourceAlias} to ${targetAlias}.`)
+	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
+	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
+	.action(async (options) => {
+		const sourceAlias = options.source
+		const targetAlias = options.destination
+
+		info(`graph:product-node-type:copy`, `Copying node types from ${chalk.bold(sourceAlias)} to ${chalk.bold(targetAlias)}.`)
 
 		const sourceContext = await useProductApi(sourceAlias)
 		const targetContext = await useProductApi(targetAlias)
@@ -27,40 +30,32 @@ program.command('copy')
 		const response = await queries.fetchAllNodeTypes()
 		await mutations.createNodeTypes(response)
 
-		console.log('')
-		console.log(chalk.bold.green(`Done!`))
+		info(``, ``)
+		success(`graph:product-node-type:copy`, `Types copied!`)
 
 		exit(0)
 	})
 
 program.command('import')
-	.description('Import list of previously exported node types')
-	.argument('<tenant alias>', argDescriptions.targetAlias)
-	.argument('<types>', argDescriptions.nodeTypes)
-	.action(async (alias, types) => {
-		console.log(`Importing node types to ${alias}.`)
+	.description('Import list of previously exported node types.')
+	.requiredOption('-t, --tenant <tenant>', 'Tenant to import node types to.')
+	.argument('<types>', 'JSON structure containing previously exported node types.')
+	.action(async (types, options) => {
+		info(`graph:product-node-type:import`, `Importing node types to ${options.tenant}.`)
 
-		const targetContext = await useProductApi(alias)
+		const targetContext = await useProductApi(options.tenant)
 		const mutations = useProductMutations(targetContext)
-
-		try {
-			await mutations.createNodeTypes(JSON.parse(types))
-
-			console.log('')
-			console.log(chalk.bold.green(`Done!`))
-
-			exit(0)
-		} catch (e) {
-			console.log(chalk.red(e))
-			exit(1)
-		}
+		await mutations.createNodeTypes(JSON.parse(types))
+		info(``, ``)
+		success(`graph:product-node-type:import`, `Types imported!`)
+		exit(0)
 	})
 
 program.command('export')
-	.description('Export all product tree node types')
-	.argument('<tenant alias>', argDescriptions.sourceAlias)
-	.action(async (alias) => {
-		const sourceContext = await useProductApi(alias)
+	.description('Export all product tree node types from a tenant.')
+	.requiredOption('-t, --tenant <tenant>', 'Tenant to export node types from.')
+	.action(async (options) => {
+		const sourceContext = await useProductApi(options.tenant)
 		const queries = useProductQueries(sourceContext)
 
 		const response = await queries.fetchAllNodeTypes()
