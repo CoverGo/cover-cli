@@ -54,7 +54,7 @@ There are a few utility commands to manage environments, most should be fairly s
 
 ```shell
 > covergo env --help
-Usage: cg env [options] [command]
+Usage: covergo env [options] [command]
 
 Options:
   -h, --help        display help for command
@@ -87,8 +87,7 @@ We recommend setting up a convention for your tenant aliases. In this example I 
 As before, there are a bunch of utility methods for managing tenants.
 
 ```shell
-> covergo tenant config --help
-Usage: cg tenant [options] [command]
+> Usage: covergo tenant [options] [command]
 
 Options:
   -h, --help               display help for command
@@ -98,7 +97,7 @@ Commands:
   list [options]           List configured tenants.
   delete [options] <name>  Delete a tenant configuration.
   info <name>              Show stored information about tenant.
-  help [command]           display help for command     
+  help [command]           display help for command
 ```
 
 ### Graph Commands

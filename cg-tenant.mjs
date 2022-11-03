@@ -12,7 +12,7 @@ program.name('covergo tenant')
 
 program
 	.command('create')
-	.description('Create a new tenant')
+	.description('Create a new tenant.')
 	.argument('<name>', 'The name you want to use when referencing this tenant in other commands.')
 	.option('-c, --client-id <client id>', 'The client id to use when authenticating with this tenant.', 'covergo_crm')
 	.option('-y, --yes', 'Skip confirmation prompts.')
@@ -23,7 +23,7 @@ program
 	.action(async (name, options) => {
 		const config = await getConfig()
 		if (!config.environments?.[options.env]) {
-			console.error(chalk.bold.red(`Unable to find environment \`${options.env}\`, check the environments listed in \`cg env list\`.`))
+			error(`tenant:create`, `Unable to find environment ${chalk.bold(options.env)}, check the environments listed in ${chalk.bold('covergo env list')}.`)
 			exit(1)
 		}
 

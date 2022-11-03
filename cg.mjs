@@ -4,7 +4,7 @@ import { Command } from 'commander';
 const program = new Command();
 
 program
-	.name('cg')
+	.name('covergo')
 	.description('Utility scripts for interacting with the covergo platform')
 	.version('0.0.1')
 	.command('graph', 'Interact with the graph API')
