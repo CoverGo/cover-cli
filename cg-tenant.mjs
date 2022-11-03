@@ -27,7 +27,7 @@ program
 			exit(1)
 		}
 
-		const { tenantId, clientId, username, password, env } = options
+		const { tenantId, clientId, username, password, environment: env } = options
 		const inputs = { tenantId, clientId, username, password, env }
 
 		if (!options.yes) {
