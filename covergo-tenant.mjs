@@ -27,8 +27,8 @@ program
 			exit(1)
 		}
 
-		const { tenantId, clientId, username, password, environment: env } = options
-		const inputs = { tenantId, clientId, username, password, env }
+		const { tenantId, clientId, username, password, env } = options
+		const inputs = { tenantId, clientId, username, password, environment: env }
 
 		if (!options.yes) {
 			info(`tenant:create`, `Tenant ID: ${tenantId}`)
