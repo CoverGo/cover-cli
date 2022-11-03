@@ -7,7 +7,7 @@
   "private": false,
   "repository": "https://github.com/CoverGo/cover-cli",
   "bin": {
-    "covergo": "cg.mjs"
+    "covergo": "covergo.mjs"
   },
   "scripts": {
     "release": "release-it"
