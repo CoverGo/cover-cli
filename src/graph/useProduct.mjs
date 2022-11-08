@@ -175,8 +175,6 @@ export const useProductMutations = (apiContext) => {
 		} catch (e) {
 			handleErrorResponse(`mutation:createProductTree`, e)
 		}
-
-		return newRootId
 	}
 
 	async function updateProductTreeIdOnProduct(product, productTreeId) {
