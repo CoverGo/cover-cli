@@ -45,6 +45,10 @@ program
 
 			info(`graph:product:copy`, `Create tree on destination tenant.`)
 			const rootNode = await mutations.createProductTree(productTree)
+			if (!rootNode) {
+				error(`graph:product:sync`, `Failed to create product tree on destination tenant.`)
+				exit(1)
+			}
 
 			success(`graph:product:copy`, `Created tree root ${chalk.bold(rootNode)}.`)
 
@@ -57,6 +61,7 @@ program
 				schema = await queries.fetchProductSchema(product.productTreeId)
 			} catch (e) {
 				warn(`graph:product:copy`, `No data schema found for product ${chalk.bold(sourceProductId)}.`)
+				exit(1)
 			}
 
 			if (schema) {
@@ -141,8 +146,12 @@ program
 			info(`graph:product:sync`, `Create tree on destination tenant.`)
 			const productTree = await queries.fetchProductTree(product)
 			const productTreeId = await mutations.createProductTree(productTree)
+			if (!productTreeId) {
+				error(`graph:product:sync`, `Failed to create product tree on destination tenant.`)
+				exit(1)
+			}
 
-			success(`graph:product:copy`, `Created tree root ${chalk.bold(productTreeId)}.`)
+			success(`graph:product:sync`, `Created tree root ${chalk.bold(productTreeId)}.`)
 
 			info(`graph:product:sync`, `Update product ID on destination tenant.`)
 			await mutations.updateProductTreeIdOnProduct(targetProduct, productTreeId)
