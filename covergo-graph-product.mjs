@@ -6,10 +6,97 @@ import { useProductMutations, useProductQueries } from './src/graph/useProduct.m
 import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { error, info, success, warn } from './src/log.mjs'
+import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
+import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
 
 const program = new Command()
 
 program.name('covergo graph product')
+
+async function copyProductTree(queries, mutations, sourceProduct, destinationProduct) {
+	info(`graph:product:copy`, `Fetch source product tree.`)
+	const productTree = await queries.fetchProductTree(sourceProduct)
+
+	info(`graph:product:copy`, `Create tree on destination tenant.`)
+	const rootNode = await mutations.createProductTree(productTree)
+
+	success(`graph:product:copy`, `Created tree root ${chalk.bold(rootNode)}.`)
+
+	if (!rootNode) {
+		error(`graph:product:sync`, `Failed to create product tree on destination tenant.`)
+		exit(1)
+	}
+
+	info(`graph:product:copy`, `Update product ID on destination tenant.`)
+	await mutations.updateProductTreeIdOnProduct(destinationProduct, rootNode)
+
+	return rootNode
+}
+
+async function copyProductSchema(queries, mutations, sourceProduct, destinationProduct, rootNodeId) {
+	let schema = null
+	try {
+		info(`graph:product:copy`, `Fetch source product data schema.`)
+		schema = await queries.fetchProductSchema(sourceProduct.productTreeId)
+	} catch (e) {
+		warn(`graph:product:copy`, `No data schema found.`)
+		exit(1)
+	}
+
+	if (schema) {
+		info(`graph:product:copy`, `Create data schema on destination tenant.`)
+		const schemaId = await mutations.createProductDataSchema(rootNodeId, schema.dataSchema)
+
+		info(`graph:product:copy`, `Create associated UI schema.`)
+		const uiSchemas = schema?.uiSchemas ?? []
+		for (const uiSchema of uiSchemas) {
+			if (uiSchema?.name === sourceProduct.productTreeId) {
+				await mutations.createProductUiDataSchema(schemaId, rootNodeId, uiSchema.schema)
+			}
+		}
+	}
+}
+
+async function copyFile(command, queries, mutations, file) {
+	info(command, `Fetch ${chalk.bold(file)}.`)
+
+	const data = await queries.fetchFile(file)
+	const [ filename, ...dirs ] = file.split('/').reverse()
+	const directory = dirs.reverse().join('/')
+
+	info(command, `Copying file ${chalk.bold(file)}.`)
+	await mutations.createFile(directory, filename, data)
+
+	success(command, `Copied ${chalk.bold(file)}!`)
+}
+
+async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct) {
+	info(`graph:product:copy`, `Copy scripts.`)
+
+	const scripts = sourceProduct?.scripts ?? []
+
+	const productMutations = useProductMutations(await useProductApi(targetAlias))
+	const fileQueries = useExternalTableQueries(await useExternalTableApi(sourceAlias))
+	const fileMutations = useExternalTableMutations(await useExternalTableApi(targetAlias))
+
+	for (const script of scripts) {
+		info(command, `Copy script ${chalk.bold(script.name)}.`)
+		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl } = script
+
+		if (script.externalTableDataUrl) {
+			await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
+		}
+
+		if (script.referenceSourceCodeUrl) {
+			await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
+		}
+
+		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl)
+		if (createdScript?.createdStatus?.id) {
+			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript?.createdStatus?.id)
+		}
+	}
+}
 
 program
 	.command('copy')
@@ -38,43 +125,15 @@ program
 			const newProduct = { ...product, productId: newId }
 
 			info(`graph:product:copy`, `Create product ${chalk.bold(targetProductId)} in tenant ${chalk.bold(targetAlias)}.`)
-			const productCopy = await mutations.createProduct(newProduct)
+			const destinationProduct = await mutations.createProduct(newProduct)
 
-			info(`graph:product:copy`, `Fetch source product tree.`)
-			const productTree = await queries.fetchProductTree(product)
-
-			info(`graph:product:copy`, `Create tree on destination tenant.`)
-			const rootNode = await mutations.createProductTree(productTree)
-			if (!rootNode) {
-				error(`graph:product:sync`, `Failed to create product tree on destination tenant.`)
-				exit(1)
+			if (product.scripts) {
+				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct)
 			}
 
-			success(`graph:product:copy`, `Created tree root ${chalk.bold(rootNode)}.`)
-
-			info(`graph:product:copy`, `Update product ID on destination tenant.`)
-			await mutations.updateProductTreeIdOnProduct(productCopy, rootNode)
-
-			let schema = null
-			try {
-				info(`graph:product:copy`, `Fetch source product data schema.`)
-				schema = await queries.fetchProductSchema(product.productTreeId)
-			} catch (e) {
-				warn(`graph:product:copy`, `No data schema found for product ${chalk.bold(sourceProductId)}.`)
-				exit(1)
-			}
-
-			if (schema) {
-				info(`graph:product:copy`, `Create data schema on destination tenant.`)
-				const schemaId = await mutations.createProductDataSchema(rootNode, schema.dataSchema)
-
-				info(`graph:product:copy`, `Create associated UI schema.`)
-				const uiSchemas = schema?.uiSchemas ?? []
-				for (const uiSchema of uiSchemas) {
-					if (uiSchema?.name === productCopy.productTreeId) {
-						await mutations.createProductUiDataSchema(schemaId, rootNode, uiSchema.schema)
-					}
-				}
+			if (product.productTreeId) {
+				const newRoot = await copyProductTree(queries, mutations, product, destinationProduct)
+				await copyProductSchema(queries, mutations, product, destinationProduct, newRoot)
 			}
 
 			success(`graph:product:copy`, `Product ${chalk.bold(sourceProductId)} copied to ${chalk.bold(targetProductId)}.`)
@@ -136,46 +195,19 @@ program
 			const product = await queries.fetchProduct(from)
 
 			info(`graph:product:sync`, `Fetch product ${chalk.bold(to)} from tenant ${chalk.bold(targetAlias)}.`)
-			const targetProduct = await targetQueries.fetchProduct(to)
+			const destinationProduct = await targetQueries.fetchProduct(to)
 
-			if (!product.productTreeId) {
-				error(`graph:product:sync`, `Target product ${chalk.bold(product.productTreeId)} does not have a product tree ID.`)
-				exit(1)
+			if (product.representation) {
+				await mutations.updateProductRepresentation(destinationProduct, product.representation)
 			}
 
-			info(`graph:product:sync`, `Create tree on destination tenant.`)
-			const productTree = await queries.fetchProductTree(product)
-			const productTreeId = await mutations.createProductTree(productTree)
-			if (!productTreeId) {
-				error(`graph:product:sync`, `Failed to create product tree on destination tenant.`)
-				exit(1)
+			if (product.scripts) {
+				await copyScripts(`graph:product:sync`, sourceAlias, targetAlias, product, destinationProduct)
 			}
 
-			success(`graph:product:sync`, `Created tree root ${chalk.bold(productTreeId)}.`)
-
-			info(`graph:product:sync`, `Update product ID on destination tenant.`)
-			await mutations.updateProductTreeIdOnProduct(targetProduct, productTreeId)
-
-			let schema = null
-			try {
-				info(`graph:product:sync`, `Fetch source product data schema.`)
-				schema = await queries.fetchProductSchema(product.productTreeId)
-			} catch (e) {
-				warn(`graph:product:sync`, `No data schema found for product ${chalk.bold(from)}.`)
-				exit(0)
-			}
-
-			if (schema) {
-				info(`graph:product:sync`, `Create data schema on destination tenant.`)
-				const schemaId = await mutations.createProductDataSchema(productTreeId, schema.dataSchema)
-
-				info(`graph:product:sync`, `Create associated UI schema.`)
-				const uiSchemas = schema?.uiSchemas ?? []
-				for (const uiSchema of uiSchemas) {
-					if (uiSchema?.name === product.productTreeId) {
-						await mutations.createProductUiDataSchema(schemaId, productTreeId, uiSchema.schema)
-					}
-				}
+			if (product.productTreeId) {
+				const newRoot = await copyProductTree(queries, mutations, product, destinationProduct)
+				await copyProductSchema(queries, mutations, product, destinationProduct, newRoot)
 			}
 
 			success(`graph:product:sync`, `Product ${chalk.bold(from)} synced to ${chalk.bold(to)}.`)

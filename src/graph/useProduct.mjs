@@ -105,6 +105,17 @@ export const useProductMutations = (apiContext) => {
 		}
 	}
 
+	async function updateProductRepresentation(product, representation) {
+		try {
+			const result = await apiContext.updateProductRepresentation(product.productId, representation)
+			handleApiMessageError('mutation:updateProductRepresentation', result.data)
+			return result.data.data.updateProduct
+		} catch (error) {
+			handleErrorResponse('mutation:updateProductRepresentation', error)
+			exit(1)
+		}
+	}
+
 	async function createNodeTypes(productNodeTypes) {
 		const totalQueries = productNodeTypes.length
 
@@ -208,10 +219,33 @@ export const useProductMutations = (apiContext) => {
 		}
 	}
 
+	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl) {
+		try {
+			const result = await apiContext.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl)
+			handleApiMessageError('mutation:createScript', result.data)
+			return result.data.data.createScript
+		} catch (e) {
+			handleErrorResponse('mutation:createScript', e)
+		}
+	}
+
+	async function addScriptToProduct(productId, scriptId) {
+		try {
+			const result = await apiContext.addScriptToProduct(productId, scriptId)
+			handleApiMessageError('mutation:addScriptToProduct', result.data)
+			return result.data.data.addScriptToProduct
+		} catch (e) {
+			handleErrorResponse('mutation:addScriptToProduct', e)
+		}
+	}
+
 	return {
+		createScript,
+		addScriptToProduct,
 		createProduct,
 		createProductTree,
 		updateProductTreeIdOnProduct,
+		updateProductRepresentation,
 		createProductDataSchema,
 		createProductUiDataSchema,
 		createNodeTypes,
