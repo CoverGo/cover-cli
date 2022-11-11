@@ -67,19 +67,79 @@ export async function useProductApi(alias) {
 		return await request(query, variables)
 	}
 
+	async function addScriptToProduct(productId, scriptId) {
+		const query = gql`
+			mutation addScriptToProduct(
+				$productId: productIdInput!,
+				$scriptId: String!
+			) {
+				addScriptToProduct(input: {
+					productId: $productId,
+					scriptId: $scriptId,
+				}) {
+					status
+				}
+			}
+		`
+
+		const variables = {
+			productId, scriptId
+		}
+
+		return await request(query, variables)
+	}
+
+	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl) {
+		const query = gql`
+			mutation createScript(
+				$type: scriptTypeEnum = null,
+				$name: String!,
+				$inputSchema: String!,
+				$outputSchema: String!,
+				$sourceCode: String!,
+				$referenceSourceCodeUrl: String = null,
+				$externalTableDataUrl: String = null,
+			) {
+				createScript(input: {
+					type: $type,
+					name: $name,
+					inputSchema: $inputSchema,
+					outputSchema: $outputSchema,
+					sourceCode: $sourceCode,
+					referenceSourceCodeUrl: $referenceSourceCodeUrl,
+					externalTableDataUrl: $externalTableDataUrl
+				}) {
+					status
+					createdStatus {
+						id
+						ids
+					}
+				}
+			}
+		`
+
+		const variables = {
+			type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl
+		}
+
+		return await request(query, variables)
+	}
+
 	async function createProduct(product) {
 		const query = gql`
 			mutation createProduct(
 				$productId: productIdInput!,
 				$lifecycleStage: String = null,
 				$productTreeId: String = null,
+				$representation: String = null,
 				$name: String!,
 				$productIdKey: String!,
 			) {
 				createProduct(product: {
 					productId: $productId,
 					lifecycleStage: $lifecycleStage,
-					productTreeId: $productTreeId
+					productTreeId: $productTreeId,
+					representation: $representation,
 				}) {
 					productId {
 						plan
@@ -140,6 +200,22 @@ export async function useProductApi(alias) {
 		return await request(query, variables)
 	}
 
+	async function updateProductRepresentation(productId, representation) {
+		const query = gql`
+			mutation updateProductTree($productId: productIdInput!, $representation: String!) {
+				updateProduct(productId: $productId, input: { representation: $representation }) {
+					productTreeId
+				}
+			}
+		`
+
+		const variables = {
+			productId,
+			representation
+		}
+
+		return await request(query, variables)
+	}
 
 	async function updateProductTreeId(productId, productTreeId) {
 		const query = gql`
@@ -201,6 +277,18 @@ export async function useProductApi(alias) {
 					name
 					lifecycleStage
 					productTreeId
+					representation
+					scripts {
+						id
+						type
+						name
+						inputSchema
+						outputSchema
+						sourceCode
+						referenceSourceCode
+						referenceSourceCodeUrl
+						externalTableDataUrl
+					}
 				}
 			}
 
@@ -294,10 +382,13 @@ export async function useProductApi(alias) {
 
 	return {
 		createProduct,
+		updateProductRepresentation,
 		updateProductTreeId,
 		fetchProductTreeNodes,
 		fetchProduct,
 		createNode,
+		createScript,
+		addScriptToProduct,
 		createProductSchema,
 		createUiProductSchema,
 		fetchProductSchema,
