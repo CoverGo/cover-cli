@@ -6,6 +6,12 @@ import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
 import { exit } from 'node:process'
 import { error, info, success } from './src/log.mjs'
+import * as fs from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import {
+	join,
+	dirname
+} from 'node:path'
 
 const program = new Command()
 
@@ -45,20 +51,30 @@ program
 	.command('import')
 	.description('Import previously exported data')
 	.requiredOption('-t, --tenant <tenant>', 'Tenant import the tree to.')
-	.argument('<nodes>', 'JSON structure containing previously exported nodes.')
-	.action(async (nodes, options) => {
+	.option('-f, --file <file>', 'Path to file containing node structure.')
+	.action(async (options) => {
 		info(`graph:product-tree:import`, `Importing product tree to ${options.tenant}.`)
 
 		const targetContext = await useProductApi(options.tenant)
 		const mutations = useProductMutations(targetContext)
-		const rootId = await mutations.createProductTree(nodes)
+		const filePath = join(dirname(fileURLToPath(import.meta.url)), options.file);
 
-		if (!rootId) {
-			error(`graph:product-tree:copy`, `Unable to create tree.`)
+		try {
+			await fs.access(filePath)
+			const nodes = await fs.readFile(filePath, { encoding: 'utf-8' })
+
+			const rootId = await mutations.createProductTree(JSON.parse(nodes))
+			if (!rootId) {
+				error(`graph:product-tree:import`, `Unable to create tree.`)
+				exit(1)
+			}
+
+			success(`graph:product-tree:import`, `Product tree copied with ID ${chalk.bold(rootId)}.`)
+		} catch {
+			error(`graph:product-tree:import`, `Can't access path ${chalk.bold(filePath)}.`)
 			exit(1)
 		}
 
-		success(`graph:product-tree:import`, `Product tree copied with ID ${chalk.bold(rootId)}.`)
 		exit(0)
 	})
 
@@ -66,6 +82,7 @@ program
 	.command('export')
 	.description('Export product tree nodes')
 	.requiredOption('-t, --tenant <tenant>', 'Tenant export the tree from.')
+	.requiredOption('-o, --out <tenant>', 'Tenant export the tree from.')
 	.argument('<id>', "The product ID to export the tree from.")
 	.action(async (productId, options) => {
 		const sourceContext = await useProductApi(options.tenant)
@@ -74,9 +91,22 @@ program
 		const product = await queries.fetchProduct(productId)
 		const productTree = await queries.fetchProductTree(product)
 
-		console.log(JSON.stringify(productTree))
+		if (options.out) {
+			const outDir = dirname(fileURLToPath(import.meta.url))
+			const outFile = join(outDir, options.out);
 
-		exit(0)
+			try {
+				await fs.access(outDir)
+				await fs.writeFile(outFile, JSON.stringify(productTree))
+				success(`graph:product-tree:export`, `Product tree written to file ${chalk.bold(outFile)}.`)
+			} catch {
+				error(`graph:product-tree:export`, `Can't access path ${chalk.bold(outFile)}.`)
+				exit(1)
+			}
+		} else {
+			console.log(JSON.stringify(productTree))
+			exit(0)
+		}
 	})
 
 program.parse()
