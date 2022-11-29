@@ -5,7 +5,7 @@ import { chalk } from 'zx'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
 import { exit } from 'node:process'
-import { info, success } from './src/log.mjs'
+import { error, info, success } from './src/log.mjs'
 
 const program = new Command()
 
@@ -33,6 +33,11 @@ program
 		const productTree = await queries.fetchProductTree(product)
 		const rootId = await mutations.createProductTree(productTree)
 
+		if (!rootId) {
+			error(`graph:product-tree:copy`, `Unable to create tree.`)
+			exit(1)
+		}
+
 		success(`graph:product-tree:copy`, `Product tree copied with ID ${chalk.bold(rootId)}.`)
 	})
 
@@ -46,9 +51,14 @@ program
 
 		const targetContext = await useProductApi(options.tenant)
 		const mutations = useProductMutations(targetContext)
-		await mutations.createProductTree(nodes)
+		const rootId = await mutations.createProductTree(nodes)
 
-		success(`graph:product-tree:import`, `Product tree imported!`)
+		if (!rootId) {
+			error(`graph:product-tree:copy`, `Unable to create tree.`)
+			exit(1)
+		}
+
+		success(`graph:product-tree:import`, `Product tree copied with ID ${chalk.bold(rootId)}.`)
 		exit(0)
 	})
 
