@@ -2,6 +2,7 @@ import { chalk } from 'zx'
 import { exit } from 'node:process'
 import cliProgress from 'cli-progress'
 import { debug, error } from '../log.mjs'
+import { getProductIdFromString } from './productUtils.mjs'
 
 function generateId() {
 	return [...Array(8)].map(() => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)).join("")
@@ -10,7 +11,7 @@ function generateId() {
 export const useProductQueries = (apiContext) => {
 	async function fetchProduct(productId) {
 		try {
-			const [plan, name, version] = productId.split('/')
+			const { plan, name, version } = getProductIdFromString(productId)
 			const result = await apiContext.fetchProduct(plan, name, version)
 			handleApiMessageError(`query:fetchProduct`, result.data)
 

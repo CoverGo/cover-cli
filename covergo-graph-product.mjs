@@ -8,6 +8,7 @@ import { exit } from 'node:process'
 import { error, info, success, warn } from './src/log.mjs'
 import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
 import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
+import { getProductIdFromString } from './src/graph/productUtils.mjs'
 
 const program = new Command()
 
@@ -120,8 +121,7 @@ program
 			info(`graph:product:copy`, `Fetch product ${chalk.bold(sourceProductId)} from tenant ${chalk.bold(sourceAlias)}.`)
 			const product = await queries.fetchProduct(sourceProductId)
 
-			const [plan, type, version] = targetProductId.split('/')
-			const newId = { plan, type, version }
+			const newId = getProductIdFromString(targetProductId)
 			const newProduct = { ...product, productId: newId }
 
 			info(`graph:product:copy`, `Create product ${chalk.bold(targetProductId)} in tenant ${chalk.bold(targetAlias)}.`)
