@@ -4,14 +4,10 @@ import { Command } from 'commander'
 import { chalk } from 'zx'
 import { useProductApi } from './src/graph/api/useProductApi.mjs'
 import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
-import { exit } from 'node:process'
+import { exit, cwd } from 'node:process'
 import { error, info, success } from './src/log.mjs'
 import * as fs from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
-import {
-	join,
-	dirname
-} from 'node:path'
+import { join } from 'node:path'
 
 const program = new Command()
 
@@ -57,7 +53,7 @@ program
 
 		const targetContext = await useProductApi(options.tenant)
 		const mutations = useProductMutations(targetContext)
-		const filePath = join(dirname(fileURLToPath(import.meta.url)), options.file);
+		const filePath = join(cwd(), options.file);
 
 		try {
 			await fs.access(filePath)
@@ -92,7 +88,7 @@ program
 		const productTree = await queries.fetchProductTree(product)
 
 		if (options.out) {
-			const outDir = dirname(fileURLToPath(import.meta.url))
+			const outDir = cwd()
 			const outFile = join(outDir, options.out);
 
 			try {
