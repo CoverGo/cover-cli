@@ -11,8 +11,8 @@ function generateId() {
 export const useProductQueries = (apiContext) => {
 	async function fetchProduct(productId) {
 		try {
-			const { plan, name, version } = getProductIdFromString(productId)
-			const result = await apiContext.fetchProduct(plan, name, version)
+			const { plan, type, version } = getProductIdFromString(productId)
+			const result = await apiContext.fetchProduct(plan, type, version)
 			handleApiMessageError(`query:fetchProduct`, result.data)
 
 			const product = result.data.data?.products?.list?.[0]

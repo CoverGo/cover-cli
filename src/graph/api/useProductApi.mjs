@@ -231,6 +231,8 @@ export async function useProductApi(alias) {
 			productTreeId
 		}
 
+		console.log(variables)
+
 		return await request(query, variables)
 	}
 
