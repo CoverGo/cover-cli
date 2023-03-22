@@ -71,7 +71,7 @@ async function copyFile(command, queries, mutations, file) {
 	success(command, `Copied ${chalk.bold(file)}!`)
 }
 
-async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct) {
+async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct, copyFiles = false) {
 	info(`graph:product:copy`, `Copy scripts.`)
 
 	const scripts = sourceProduct?.scripts ?? []
@@ -84,12 +84,14 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
 		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls } = script
 
-		if (script.externalTableDataUrl) {
-			await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
-		}
+		if (copyFiles) {
+			if (script.externalTableDataUrl) {
+				await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
+			}
 
-		if (script.referenceSourceCodeUrl) {
-			await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
+			if (script.referenceSourceCodeUrl) {
+				await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
+			}
 		}
 
 		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
@@ -105,14 +107,14 @@ program
 	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
 	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
 	.option('-i, --id <id>', 'Give the newly copied file a different ID from the source.')
-	.option('-s, --scripts', 'Copy scripts with product. WARNING: Will overwrite scripts on target.')
+	.option('-f, --files', 'Copy files associated with product. WARNING: Will overwrite scripts on target.')
 	.argument('<id>', "The product ID to copy.")
 	.action(async (sourceProductId, options) => {
 		try {
 			const sourceAlias = options.source
 			const targetAlias = options.destination
 			const targetProductId = options.id ?? sourceProductId
-			const copyScripts = options.scripts ?? false
+			const shouldCopyFiles = options.files ?? false
 
 			const sourceContext = await useProductApi(sourceAlias)
 			const targetContext = await useProductApi(targetAlias)
@@ -129,8 +131,8 @@ program
 			info(`graph:product:copy`, `Create product ${chalk.bold(targetProductId)} in tenant ${chalk.bold(targetAlias)}.`)
 			const destinationProduct = await mutations.createProduct(newProduct)
 
-			if (product.scripts && copyScripts) {
-				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct)
+			if (product.scripts) {
+				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles)
 			}
 
 			if (product.productTreeId) {
