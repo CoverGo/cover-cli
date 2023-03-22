@@ -99,6 +99,7 @@ export async function useProductApi(alias) {
 				$sourceCode: String!,
 				$referenceSourceCodeUrl: String = null,
 				$externalTableDataUrl: String = null,
+  			$externalTableDataUrls: [String!]
 			) {
 				createScript(input: {
 					type: $type,
@@ -107,7 +108,8 @@ export async function useProductApi(alias) {
 					outputSchema: $outputSchema,
 					sourceCode: $sourceCode,
 					referenceSourceCodeUrl: $referenceSourceCodeUrl,
-					externalTableDataUrl: $externalTableDataUrl
+					externalTableDataUrl: $externalTableDataUrl,
+    			externalTableDataUrls: $externalTableDataUrls
 				}) {
 					status
 					createdStatus {

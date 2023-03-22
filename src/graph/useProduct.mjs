@@ -220,9 +220,9 @@ export const useProductMutations = (apiContext) => {
 		}
 	}
 
-	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl) {
+	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls = []) {
 		try {
-			const result = await apiContext.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl)
+			const result = await apiContext.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
 			handleApiMessageError('mutation:createScript', result.data)
 			return result.data.data.createScript
 		} catch (e) {

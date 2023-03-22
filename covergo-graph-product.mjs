@@ -82,7 +82,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
-		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl } = script
+		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls } = script
 
 		if (script.externalTableDataUrl) {
 			await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
@@ -92,7 +92,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 			await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
 		}
 
-		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl)
+		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
 		if (createdScript?.createdStatus?.id) {
 			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript?.createdStatus?.id)
 		}
@@ -105,12 +105,14 @@ program
 	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
 	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
 	.option('-i, --id <id>', 'Give the newly copied file a different ID from the source.')
+	.option('-s, --scripts', 'Copy scripts with product. WARNING: Will overwrite scripts on target.')
 	.argument('<id>', "The product ID to copy.")
 	.action(async (sourceProductId, options) => {
 		try {
 			const sourceAlias = options.source
 			const targetAlias = options.destination
 			const targetProductId = options.id ?? sourceProductId
+			const copyScripts = options.scripts ?? false
 
 			const sourceContext = await useProductApi(sourceAlias)
 			const targetContext = await useProductApi(targetAlias)
@@ -127,7 +129,7 @@ program
 			info(`graph:product:copy`, `Create product ${chalk.bold(targetProductId)} in tenant ${chalk.bold(targetAlias)}.`)
 			const destinationProduct = await mutations.createProduct(newProduct)
 
-			if (product.scripts) {
+			if (product.scripts && copyScripts) {
 				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct)
 			}
 
