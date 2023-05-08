@@ -77,12 +77,13 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 	const scripts = sourceProduct?.scripts ?? []
 
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
+	const productQueries = useProductQueries(await useProductApi(targetAlias))
 	const fileQueries = useExternalTableQueries(await useExternalTableApi(sourceAlias))
 	const fileMutations = useExternalTableMutations(await useExternalTableApi(targetAlias))
 
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
-		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls } = script
+		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
 
 		if (copyFiles) {
 			if (script.externalTableDataUrl) {
@@ -94,9 +95,12 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 			}
 		}
 
+		const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
+
 		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
 		if (createdScript?.createdStatus?.id) {
-			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript?.createdStatus?.id)
+			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript.createdStatus.id)
+			await productMutations.createUiSchema(`script-${createdScript.createdStatus.id}`, schema, { "type": "JSON_SCHEMA" })
 		}
 	}
 }

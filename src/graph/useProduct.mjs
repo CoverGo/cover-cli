@@ -57,11 +57,22 @@ export const useProductQueries = (apiContext) => {
 		}
 	}
 
+	async function fetchUiSchemas(name) {
+		try {
+			const result = await apiContext.fetchUiSchemas(name)
+			handleApiMessageError('query:fetchUiSchemas', result.data)
+			return result.data.data.uiSchemas.list[0]
+		} catch (e) {
+			handleErrorResponse('query:fetchUiSchemas', e)
+		}
+	}
+
 	return {
 		fetchProduct,
 		fetchProductTree,
 		fetchProductSchema,
-		fetchAllNodeTypes
+		fetchAllNodeTypes,
+		fetchUiSchemas
 	}
 }
 
@@ -240,9 +251,20 @@ export const useProductMutations = (apiContext) => {
 		}
 	}
 
+	async function createUiSchema(name, schema, standard) {
+		try {
+			const result = await apiContext.createUiSchema(name, schema, standard)
+			handleApiMessageError('mutation:createUiSchema', result.data)
+			return result.data.data.createUiSchema
+		} catch (e) {
+			handleErrorResponse('mutation:createUiSchema', e)
+		}
+	} 
+
 	return {
 		createScript,
 		addScriptToProduct,
+		createUiSchema,
 		createProduct,
 		createProductTree,
 		updateProductTreeIdOnProduct,

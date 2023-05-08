@@ -89,6 +89,64 @@ export async function useProductApi(alias) {
 		return await request(query, variables)
 	}
 
+	// Old PB UI Schema
+	async function fetchUiSchemas(name) {
+		const query = gql`
+			query uiSchemas(
+				$where: uiSchemaWhereInput
+			)
+			{
+				uiSchemas(where: $where) {
+					totalCount
+					list {
+						id
+						name
+						schema
+						standard {
+							type
+							version
+						}
+					}
+				}
+			}
+		`
+
+		const variables = {
+			where: {
+				name,
+			}
+		}
+
+		return await request(query, variables)
+	}
+
+	async function createUiSchema(name, schema, standard) {
+		const query = gql`
+			mutation createUiSchema(
+					$name: String!,
+					$schema: String!,
+					$standard: uiSchemaStandardInputGraphType
+			) {
+				createUiSchema(input: {
+					name: $name,
+					schema: $schema,
+					standard: $standard,
+				}) {
+					createdStatus {
+						id
+						ids
+					}
+					status
+					errors
+				}
+			}
+		`
+
+		const variables = { name, schema, standard}
+
+		return await request(query, variables) 
+	}
+
 	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl) {
 		const query = gql`
 			mutation createScript(
@@ -390,9 +448,11 @@ export async function useProductApi(alias) {
 		updateProductTreeId,
 		fetchProductTreeNodes,
 		fetchProduct,
+		fetchUiSchemas,
 		createNode,
 		createScript,
 		addScriptToProduct,
+		createUiSchema,
 		createProductSchema,
 		createUiProductSchema,
 		fetchProductSchema,
