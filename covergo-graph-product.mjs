@@ -77,7 +77,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 	const scripts = sourceProduct?.scripts ?? []
 
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
-	const productQueries = useProductQueries(await useProductApi(targetAlias))
+	const productQueries = useProductQueries(await useProductApi(sourceAlias))
 	const fileQueries = useExternalTableQueries(await useExternalTableApi(sourceAlias))
 	const fileMutations = useExternalTableMutations(await useExternalTableApi(targetAlias))
 
