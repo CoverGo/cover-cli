@@ -7,7 +7,7 @@ import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { error, info, success, warn } from './src/log.mjs'
 import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
-import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
+import { useFileApi } from './src/graph/api/useFileApi.mjs'
 import { getProductIdFromString } from './src/graph/productUtils.mjs'
 
 const program = new Command()
@@ -78,8 +78,8 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
 	const productQueries = useProductQueries(await useProductApi(sourceAlias))
-	const fileQueries = useExternalTableQueries(await useExternalTableApi(sourceAlias))
-	const fileMutations = useExternalTableMutations(await useExternalTableApi(targetAlias))
+	const fileQueries = useExternalTableQueries(await useFileApi(sourceAlias))
+	const fileMutations = useExternalTableMutations(await useFileApi(targetAlias))
 
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)

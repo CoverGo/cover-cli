@@ -3,7 +3,7 @@
 import { Command } from 'commander'
 import { chalk } from 'zx'
 import { exit } from 'node:process'
-import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
+import { useFileApi } from './src/graph/api/useFileApi.mjs'
 import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
 import { info, success } from './src/log.mjs'
 
@@ -20,8 +20,8 @@ program
 	.option('-m, --move <file>', 'Move the newly copied file to a different location.')
 	.action(async (options) => {
 		try {
-			const sourceContext = await useExternalTableApi(options.source)
-			const targetContext = await useExternalTableApi(options.destination)
+			const sourceContext = await useFileApi(options.source)
+			const targetContext = await useFileApi(options.destination)
 
 			const queries = useExternalTableQueries(sourceContext)
 			const mutations = useExternalTableMutations(targetContext)
