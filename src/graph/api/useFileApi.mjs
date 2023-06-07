@@ -15,7 +15,7 @@ export async function useFileApi(alias) {
 	}
 
 	async function createFile(directory, fileName, content) {
-		const text = JSON.stringify(content)
+		const text = typeof content === "object" ? JSON.stringify(content) : content
 		const blob = Buffer.from(text)
 
 		const formData = new FormData()
