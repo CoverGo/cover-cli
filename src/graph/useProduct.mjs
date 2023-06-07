@@ -61,7 +61,13 @@ export const useProductQueries = (apiContext) => {
 		try {
 			const result = await apiContext.fetchUiSchemas(name)
 			handleApiMessageError('query:fetchUiSchemas', result.data)
-			return result.data.data.uiSchemas.list[0]
+			const uiSchema = result?.data?.data?.uiSchemas?.list?.[0]
+			if (!uiSchema) {
+				error(`query:fetchUiSchemas`, `UI Schema with name ${chalk.bold(name)} not found.`)
+				exit(1)
+			}
+
+			return uiSchema
 		} catch (e) {
 			handleErrorResponse('query:fetchUiSchemas', e)
 		}

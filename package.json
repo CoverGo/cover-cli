@@ -1,6 +1,6 @@
 {
   "name": "@covergo/cli",
-  "version": "2.2.7",
+  "version": "2.2.16",
   "main": "index.js",
   "license": "MIT",
   "type": "module",
