@@ -90,6 +90,12 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 				await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
 			}
 
+			if (script.externalTableDataUrls && Array.isArray(externalTableDataUrls)) {
+				for (const table of script.externalTableDataUrls) {
+					await copyFile(command, fileQueries, fileMutations, table)
+				}
+			}
+
 			if (script.referenceSourceCodeUrl) {
 				await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
 			}

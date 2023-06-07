@@ -147,7 +147,7 @@ export async function useProductApi(alias) {
 		return await request(query, variables) 
 	}
 
-	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl) {
+	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls) {
 		const query = gql`
 			mutation createScript(
 				$type: scriptTypeEnum = null,
@@ -157,7 +157,7 @@ export async function useProductApi(alias) {
 				$sourceCode: String!,
 				$referenceSourceCodeUrl: String = null,
 				$externalTableDataUrl: String = null,
-  			$externalTableDataUrls: [String!]
+  				$externalTableDataUrls: [String!]
 			) {
 				createScript(input: {
 					type: $type,
@@ -167,7 +167,7 @@ export async function useProductApi(alias) {
 					sourceCode: $sourceCode,
 					referenceSourceCodeUrl: $referenceSourceCodeUrl,
 					externalTableDataUrl: $externalTableDataUrl,
-    			externalTableDataUrls: $externalTableDataUrls
+    				externalTableDataUrls: $externalTableDataUrls
 				}) {
 					status
 					createdStatus {
@@ -179,7 +179,7 @@ export async function useProductApi(alias) {
 		`
 
 		const variables = {
-			type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl
+			type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls
 		}
 
 		return await request(query, variables)
@@ -350,6 +350,7 @@ export async function useProductApi(alias) {
 						referenceSourceCode
 						referenceSourceCodeUrl
 						externalTableDataUrl
+						externalTableDataUrls
 					}
 				}
 			}
