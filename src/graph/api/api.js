@@ -5,10 +5,15 @@ export function getGraphEndpoint(endpoint) {
 	return `${endpoint}/graphql`
 }
 
+// Helps to avoid issue when user defined tenant with graphql in api url
+function getRestEndpoint(endpoint, query) {
+	return `${endpoint.endsWith("/graphql") ? endpoint.slice(0, -8) : endpoint}/api/v1/${query}`
+}
+
 export function createRestGetRequest(environment, token) {
 	return async function request(query) {
 		return await axios.get(
-			`${environment.endpoint}/api/v1/${query}`,
+			getRestEndpoint(environment.endpoint, query),
 			{
 				headers: {
 					Authorization: `Bearer ${token}`
@@ -20,7 +25,7 @@ export function createRestGetRequest(environment, token) {
 export function createRestPostRequest(environment, token) {
 	return async function request(query, data) {
 		return await axios.post(
-			`${environment.endpoint}/api/v1/${query}`,
+			getRestEndpoint(environment.endpoint, query),
 			data,
 			{
 				headers: {
