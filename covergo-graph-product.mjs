@@ -81,23 +81,31 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 	const fileQueries = useExternalTableQueries(await useFileApi(sourceAlias))
 	const fileMutations = useExternalTableMutations(await useFileApi(targetAlias))
 
+
+	const copiedFiles = []
+
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
 		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
 
 		if (copyFiles) {
-			if (script.externalTableDataUrl) {
+			if (script.externalTableDataUrl && !copiedFiles.includes(script.externalTableDataUrl)) {
 				await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
+				copiedFiles.push(script.externalTableDataUrl)
 			}
 
 			if (script.externalTableDataUrls && Array.isArray(externalTableDataUrls)) {
 				for (const table of script.externalTableDataUrls) {
-					await copyFile(command, fileQueries, fileMutations, table)
+					if (!copiedFiles.includes(table)) {
+						await copyFile(command, fileQueries, fileMutations, table)
+						copiedFiles.push(table)
+					}
 				}
 			}
 
-			if (script.referenceSourceCodeUrl) {
+			if (script.referenceSourceCodeUrl && !copiedFiles.includes(script.referenceSourceCodeUrl)) {
 				await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
+				copiedFiles.push(script.referenceSourceCodeUrl)
 			}
 		}
 
