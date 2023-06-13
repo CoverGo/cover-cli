@@ -3,7 +3,7 @@ import FormData from 'form-data'
 import { getTenantWithEnvironment } from '../../config/config.mjs'
 import { fetchNewToken } from '../../login/login.mjs'
 
-export async function useExternalTableApi(alias) {
+export async function useFileApi(alias) {
   const tenant = await getTenantWithEnvironment(alias)
   const token = await fetchNewToken(tenant.environment, tenant)
 	const get = createRestGetRequest(tenant.environment, token)
@@ -15,7 +15,7 @@ export async function useExternalTableApi(alias) {
 	}
 
 	async function createFile(directory, fileName, content) {
-		const text = JSON.stringify(content)
+		const text = typeof content === "object" ? JSON.stringify(content) : content
 		const blob = Buffer.from(text)
 
 		const formData = new FormData()

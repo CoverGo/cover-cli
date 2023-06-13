@@ -7,7 +7,7 @@ import { chalk } from 'zx'
 import { exit } from 'node:process'
 import { error, info, success, warn } from './src/log.mjs'
 import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
-import { useExternalTableApi } from './src/graph/api/useExteralTableApi.mjs'
+import { useFileApi } from './src/graph/api/useFileApi.mjs'
 import { getProductIdFromString } from './src/graph/productUtils.mjs'
 
 const program = new Command()
@@ -71,27 +71,42 @@ async function copyFile(command, queries, mutations, file) {
 	success(command, `Copied ${chalk.bold(file)}!`)
 }
 
-async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct, copyFiles = false) {
+async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct, copyFiles = false, copyWorksheets = false, copyScripts = false) {
 	info(`graph:product:copy`, `Copy scripts.`)
 
 	const scripts = sourceProduct?.scripts ?? []
 
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
 	const productQueries = useProductQueries(await useProductApi(sourceAlias))
-	const fileQueries = useExternalTableQueries(await useExternalTableApi(sourceAlias))
-	const fileMutations = useExternalTableMutations(await useExternalTableApi(targetAlias))
+	const fileQueries = useExternalTableQueries(await useFileApi(sourceAlias))
+	const fileMutations = useExternalTableMutations(await useFileApi(targetAlias))
+
+	const copiedFiles = []
 
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
 		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
 
-		if (copyFiles) {
-			if (script.externalTableDataUrl) {
+		if (copyFiles || copyWorksheets) {
+			if (script.externalTableDataUrl && !copiedFiles.includes(script.externalTableDataUrl)) {
 				await copyFile(command, fileQueries, fileMutations, script.externalTableDataUrl)
+				copiedFiles.push(script.externalTableDataUrl)
 			}
 
-			if (script.referenceSourceCodeUrl) {
+			if (script.externalTableDataUrls && Array.isArray(externalTableDataUrls)) {
+				for (const table of script.externalTableDataUrls) {
+					if (!copiedFiles.includes(table)) {
+						await copyFile(command, fileQueries, fileMutations, table)
+						copiedFiles.push(table)
+					}
+				}
+			}
+		}
+
+		if (copyFiles || copyScripts) {
+			if (script.referenceSourceCodeUrl && !copiedFiles.includes(script.referenceSourceCodeUrl)) {
 				await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
+				copiedFiles.push(script.referenceSourceCodeUrl)
 			}
 		}
 
@@ -111,7 +126,9 @@ program
 	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
 	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
 	.option('-i, --id <id>', 'Give the newly copied file a different ID from the source.')
-	.option('-f, --files', 'Copy files associated with product. WARNING: Will overwrite scripts on target.')
+	.option('-f, --files', 'Copy files associated with product. WARNING: Will overwrite files on target.')
+	.option('-w, --worksheets', 'Copy tables associated with product. WARNING: Will overwrite table files on target.')
+	.option('-S, --scripts', 'Copy scripts associated with product. WARNING: Will overwrite script files on target.')
 	.argument('<id>', "The product ID to copy.")
 	.action(async (sourceProductId, options) => {
 		try {
@@ -119,6 +136,8 @@ program
 			const targetAlias = options.destination
 			const targetProductId = options.id ?? sourceProductId
 			const shouldCopyFiles = options.files ?? false
+			const shouldCopyWorksheets = options.worksheets ?? false
+			const shouldCopyScripts = options.scripts ?? false
 
 			const sourceContext = await useProductApi(sourceAlias)
 			const targetContext = await useProductApi(targetAlias)
@@ -136,7 +155,7 @@ program
 			const destinationProduct = await mutations.createProduct(newProduct)
 
 			if (product.scripts) {
-				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles)
+				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles, shouldCopyWorksheets, shouldCopyScripts)
 			}
 
 			if (product.productTreeId) {
