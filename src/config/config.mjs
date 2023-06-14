@@ -23,6 +23,10 @@ export async function getTenantWithEnvironment(alias) {
     endpoint: envConfig.endpoint
   }
 
+  if (tenant.jwt?.request?.headers) {
+    tenant.jwt.request.headers = tenant.jwt.request.headers.reduce((acc, { key, value }) => Object.assign(acc, { [key]: value }), {})
+  }
+
   return tenant
 }
 

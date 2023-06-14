@@ -6,6 +6,11 @@ import {exit} from "node:process";
 import { getGraphEndpoint } from '../graph/api/api.js'
 
 export async function fetchNewToken(environment, tenant) {
+	if (tenant.jwt) return await fetchJwt(tenant.jwt)
+	return await fetchDefaultToken(environment, tenant)
+}
+
+async function fetchDefaultToken(environment, tenant) {
 	const query = gql`
 		query token($tenantId: String!, $clientId: String!, $username: String!, $password: String!) {
 			token_2(
@@ -44,4 +49,20 @@ export async function fetchNewToken(environment, tenant) {
 	catch (e) {
 		console.error(e)
 	}
+}
+
+async function fetchJwt({ request, property }) {
+	try {
+		const response = await axios(request)
+		const token = response.data[property]
+		if (!token) {
+			console.log(chalk.red(`Couldn't get token`))
+			exit(1)
+		}
+
+		return token
+	}
+	catch (e) {
+		console.error(e)
+	}  
 }

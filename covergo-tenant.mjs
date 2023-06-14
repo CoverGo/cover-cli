@@ -53,6 +53,62 @@ program
 	})
 
 program
+	.command('create-jwt')
+	.description('Create a new tenant with JWT settings.')
+	.argument('<name>', 'The name you want to use when referencing this tenant in other commands.')
+	.option('-y, --yes', 'Skip confirmation prompts.')
+	.requiredOption('-e, --env <environment>', 'Environment this tenant belongs to.')
+	.requiredOption('-u, --url <url>', 'URL to get access token from.')
+	.option('-h, --header <headers...>', 'Headers to be sent.')
+	.requiredOption('-p, --property <property>', 'Response property to get access token from.')
+	.action(async (name, options) => {
+		const config = await getConfig()
+		if (!config.environments?.[options.env]) {
+			error(`tenant:create-jwt`, `Unable to find environment ${chalk.bold(options.env)}, check the environments listed in ${chalk.bold('covergo env list')}.`)
+			exit(1)
+		}
+
+		const { url, header, property, env } = options
+		const inputs = {
+			jwt: {
+				request: {
+					url,
+					headers: extractHeaders(header)
+				},
+				property
+			},
+			environment: env
+		}
+
+		if (!options.yes) {
+			info(`tenant:create-jwt`, `URL: ${url}`)
+			header?.forEach(h => info(`tenant:create-jwt`, `Header: '${h}'`))
+			info(`tenant:create-jwt`, `Property: ${property}`)
+			info(`tenant:create-jwt`, `Environment: ${env}`)
+
+			const confirmation = await question(`Create ${chalk.bold(name)}? ${chalk.bold(`(y/n)`)} `)
+			if (confirmation.toLowerCase() !== 'y') {
+				exit(1)
+			}
+		}
+
+		const tenants = config?.tenants ?? {}
+		tenants[name] = inputs
+		config.tenants = tenants
+		await writeConfig(config)
+
+		success(`tenant:create-jwt`, `New tenant ${chalk.bold(name)} created!`)
+		exit(0)
+	})
+
+function extractHeaders(headers) {
+	return headers?.map(h => {
+		const [key, value] = h.split(':')
+		return { key, value: value?.trimStart() }
+	})
+}
+
+program
 	.command('list')
 	.description('List configured tenants.')
 	.option('-e --env <env>', 'Filter to show tenants belonging to this environment.', )
@@ -108,12 +164,20 @@ program
 
 		if (tenants[name]) {
 			const tenant = tenants[name]
+			const jwt = tenant.jwt;
 
-			console.log(tenant?.tenantId)
-			console.log(tenant?.clientId)
-			console.log(tenant?.username)
-			console.log(tenant?.password)
-			console.log(tenant?.environment)
+			if (jwt) {
+				console.log(jwt.request.url)
+				jwt.request.headers?.forEach(({ key, value }) => console.log(`${key}: ${value}`))
+				console.log(jwt.property)
+			}
+			else {
+				console.log(tenant.tenantId)
+				console.log(tenant.clientId)
+				console.log(tenant.username)
+				console.log(tenant.password)
+			}
+			console.log(tenant.environment)
 
 			exit(0)
 		}
