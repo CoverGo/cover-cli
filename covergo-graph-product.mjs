@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander'
-import { useProductApi } from './src/graph/api/useProductApi.mjs'
-import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
-import { chalk } from 'zx'
-import { exit } from 'node:process'
-import { error, info, success, warn } from './src/log.mjs'
-import { useExternalTableMutations, useExternalTableQueries } from './src/graph/useExternalTable.mjs'
-import { useFileApi } from './src/graph/api/useFileApi.mjs'
-import { getProductIdFromString } from './src/graph/productUtils.mjs'
+import { Command } from "commander"
+import { useProductApi } from "./src/graph/api/useProductApi.mjs"
+import { useProductMutations, useProductQueries } from "./src/graph/useProduct.mjs"
+import { chalk } from "zx"
+import { exit } from "node:process"
+import { error, info, success, warn } from "./src/log.mjs"
+import { useExternalTableMutations, useExternalTableQueries } from "./src/graph/useExternalTable.mjs"
+import { useFileApi } from "./src/graph/api/useFileApi.mjs"
+import { getProductIdFromString } from "./src/graph/productUtils.mjs"
 
 const program = new Command()
 
-program.name('covergo graph product')
+program.name("covergo graph product")
 
 async function copyProductTree(queries, mutations, sourceProduct, destinationProduct) {
 	info(`graph:product:copy`, `Fetch source product tree.`)
@@ -34,7 +34,7 @@ async function copyProductTree(queries, mutations, sourceProduct, destinationPro
 	return rootNode
 }
 
-async function copyProductSchema(queries, mutations, sourceProduct, destinationProduct, rootNodeId) {
+async function copyProductSchema(queries, mutations, sourceProduct, newRootId) {
 	let schema = null
 	try {
 		info(`graph:product:copy`, `Fetch source product data schema.`)
@@ -46,13 +46,13 @@ async function copyProductSchema(queries, mutations, sourceProduct, destinationP
 
 	if (schema) {
 		info(`graph:product:copy`, `Create data schema on destination tenant.`)
-		const schemaId = await mutations.createProductDataSchema(rootNodeId, schema.dataSchema)
+		const schemaId = await mutations.createProductDataSchema(newRootId, schema.dataSchema)
 
 		info(`graph:product:copy`, `Create associated UI schema.`)
 		const uiSchemas = schema?.uiSchemas ?? []
 		for (const uiSchema of uiSchemas) {
 			if (uiSchema?.name === sourceProduct.productTreeId) {
-				await mutations.createProductUiDataSchema(schemaId, rootNodeId, uiSchema.schema)
+				await mutations.createProductUiDataSchema(schemaId, newRootId, uiSchema.schema)
 			}
 		}
 	}
@@ -62,8 +62,8 @@ async function copyFile(command, queries, mutations, file) {
 	info(command, `Fetch ${chalk.bold(file)}.`)
 
 	const data = await queries.fetchFile(file)
-	const [ filename, ...dirs ] = file.split('/').reverse()
-	const directory = dirs.reverse().join('/')
+	const [filename, ...dirs] = file.split("/").reverse()
+	const directory = dirs.reverse().join("/")
 
 	info(command, `Copying file ${chalk.bold(file)}.`)
 	await mutations.createFile(directory, filename, data)
@@ -71,11 +71,23 @@ async function copyFile(command, queries, mutations, file) {
 	success(command, `Copied ${chalk.bold(file)}!`)
 }
 
-async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, destinationProduct, copyFiles = false, copyWorksheets = false, copyScripts = false) {
+async function copyScripts(
+	command,
+	sourceAlias,
+	targetAlias,
+	sourceProduct,
+	destinationProduct,
+	copyFiles = false,
+	copyWorksheets = false,
+	copyScripts = false
+) {
+	if (!copyScripts) {
+		return
+	}
+
 	info(`graph:product:copy`, `Copy scripts.`)
 
 	const scripts = sourceProduct?.scripts ?? []
-
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
 	const productQueries = useProductQueries(await useProductApi(sourceAlias))
 	const fileQueries = useExternalTableQueries(await useFileApi(sourceAlias))
@@ -85,7 +97,17 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
-		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
+		const {
+			type,
+			name,
+			inputSchema,
+			outputSchema,
+			sourceCode,
+			referenceSourceCodeUrl,
+			externalTableDataUrl,
+			externalTableDataUrls,
+			id,
+		} = script
 
 		if (copyFiles || copyWorksheets) {
 			if (script.externalTableDataUrl && !copiedFiles.includes(script.externalTableDataUrl)) {
@@ -103,7 +125,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 			}
 		}
 
-		if (copyFiles || copyScripts) {
+		if (copyFiles) {
 			if (script.referenceSourceCodeUrl && !copiedFiles.includes(script.referenceSourceCodeUrl)) {
 				await copyFile(command, fileQueries, fileMutations, script.referenceSourceCodeUrl)
 				copiedFiles.push(script.referenceSourceCodeUrl)
@@ -112,24 +134,33 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 
 		const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
 
-		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
+		const createdScript = await productMutations.createScript(
+			type,
+			name,
+			inputSchema,
+			outputSchema,
+			sourceCode,
+			referenceSourceCodeUrl,
+			externalTableDataUrl,
+			externalTableDataUrls
+		)
 		if (createdScript?.createdStatus?.id) {
 			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript.createdStatus.id)
-			await productMutations.createUiSchema(`script-${createdScript.createdStatus.id}`, schema, { "type": "JSON_SCHEMA" })
+			await productMutations.createUiSchema(`script-${createdScript.createdStatus.id}`, schema, { type: "JSON_SCHEMA" })
 		}
 	}
 }
 
 program
-	.command('copy')
-	.description('Copy a product including tree and data schemas.')
-	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
-	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
-	.option('-i, --id <id>', 'Give the newly copied file a different ID from the source.')
-	.option('-f, --files', 'Copy files associated with product. WARNING: Will overwrite files on target.')
-	.option('-w, --worksheets', 'Copy tables associated with product. WARNING: Will overwrite table files on target.')
-	.option('-S, --scripts', 'Copy scripts associated with product. WARNING: Will overwrite script files on target.')
-	.argument('<id>', "The product ID to copy.")
+	.command("copy")
+	.description("Copy a product including tree and data schemas.")
+	.requiredOption("-s, --source <tenant>", "Name of the source tenant.")
+	.requiredOption("-d, --destination <tenant>", "Name of the destination tenant.")
+	.option("-i, --id <id>", "Give the newly copied file a different ID from the source.")
+	.option("-f, --files", "Copy files associated with product. WARNING: Will overwrite files on target.")
+	.option("-w, --worksheets", "Copy tables associated with product. WARNING: Will overwrite table files on target.")
+	.option("-S, --scripts", "Copy scripts associated with product. WARNING: Will overwrite script files on target.")
+	.argument("<id>", "The product ID to copy.")
 	.action(async (sourceProductId, options) => {
 		try {
 			const sourceAlias = options.source
@@ -146,7 +177,7 @@ program
 			const mutations = useProductMutations(targetContext)
 
 			info(`graph:product:copy`, `Fetch product ${chalk.bold(sourceProductId)} from tenant ${chalk.bold(sourceAlias)}.`)
-			const product = await queries.fetchProduct(sourceProductId)
+			const product = await queries.fetchProduct(sourceProductId, shouldCopyScripts)
 
 			const newId = getProductIdFromString(targetProductId)
 			const newProduct = { ...product, productId: newId }
@@ -155,12 +186,21 @@ program
 			const destinationProduct = await mutations.createProduct(newProduct)
 
 			if (product.scripts) {
-				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles, shouldCopyWorksheets, shouldCopyScripts)
+				await copyScripts(
+					`graph:product:copy`,
+					sourceAlias,
+					targetAlias,
+					product,
+					destinationProduct,
+					shouldCopyFiles,
+					shouldCopyWorksheets,
+					shouldCopyScripts
+				)
 			}
 
 			if (product.productTreeId) {
 				const newRoot = await copyProductTree(queries, mutations, product, destinationProduct)
-				await copyProductSchema(queries, mutations, product, destinationProduct, newRoot)
+				await copyProductSchema(queries, mutations, product, newRoot)
 			}
 
 			success(`graph:product:copy`, `Product ${chalk.bold(sourceProductId)} copied to ${chalk.bold(targetProductId)}.`)
@@ -171,11 +211,11 @@ program
 	})
 
 program
-	.command('assign-tree')
-	.description('Assign a product tree to a product')
-	.requiredOption('-t, --tenant <tenant>', 'The tenant this product is hosted on.')
-	.argument('<productId>', 'The product ID to assign the tree to.')
-	.argument('<productTreeId>', 'The product tree ID to assign to the product.')
+	.command("assign-tree")
+	.description("Assign a product tree to a product")
+	.requiredOption("-t, --tenant <tenant>", "The tenant this product is hosted on.")
+	.argument("<productId>", "The product ID to assign the tree to.")
+	.argument("<productTreeId>", "The product tree ID to assign to the product.")
 	.action(async (productId, productTreeId, options) => {
 		try {
 			const alias = options.tenant
@@ -198,13 +238,13 @@ program
 	})
 
 program
-	.command('sync')
-	.description('Sync a product from one environment to another')
+	.command("sync")
+	.description("Sync a product from one environment to another")
 
-	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
-	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
-	.argument('<from>', "The product to sync from.")
-	.argument('<to>', "The product to sync to.")
+	.requiredOption("-s, --source <tenant>", "Name of the source tenant.")
+	.requiredOption("-d, --destination <tenant>", "Name of the destination tenant.")
+	.argument("<from>", "The product to sync from.")
+	.argument("<to>", "The product to sync to.")
 
 	.action(async (from, to, options) => {
 		try {
@@ -234,7 +274,7 @@ program
 
 			if (product.productTreeId) {
 				const newRoot = await copyProductTree(queries, mutations, product, destinationProduct)
-				await copyProductSchema(queries, mutations, product, destinationProduct, newRoot)
+				await copyProductSchema(queries, mutations, product, newRoot)
 			}
 
 			success(`graph:product:sync`, `Product ${chalk.bold(from)} synced to ${chalk.bold(to)}.`)
