@@ -5,7 +5,7 @@ export const useExternalTableQueries = (apiContext) => {
 	}
 
 	return {
-		fetchFile
+		fetchFile,
 	}
 }
 
@@ -15,6 +15,6 @@ export const useExternalTableMutations = (apiContext) => {
 	}
 
 	return {
-		createFile
+		createFile,
 	}
 }

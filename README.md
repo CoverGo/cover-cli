@@ -4,8 +4,8 @@ This package provides a simple command line interface for CoverGo APIs.
 
 ## Prerequisites
 
-* Node.js
-* A shell that can execute bash scripts (WSL on Windows)
+- Node.js
+- A shell that can execute bash scripts (WSL on Windows)
 
 ## Installation
 
@@ -32,7 +32,7 @@ Commands:
 ## Concepts
 
 | Concept     | Description                                                                                               |
-|-------------|-----------------------------------------------------------------------------------------------------------|
+| ----------- | --------------------------------------------------------------------------------------------------------- |
 | Environment | A server running the CoverGo GraphQl API. There can be many tenants associated with a single environment. |
 | Tenant      | A self-contained instance of an environment with it's own configured products, users, quotes, etc...      |
 | Graph       | In the context of the CLI "graph" operations relate to API operations.                                    |
@@ -158,7 +158,6 @@ It's also sometimes useful to be able to copy over product trees between environ
 
 > **Note!**
 > Copying a tree does not associate it with a product. Pay attention to the root node output when the command finishes running, we will use that in the next step.
-
 
 ```shell
 > covergo graph product-tree copy --source tenant-a --destination tenant-b "product/type/version" # the last param is a product ID e.g. "home/building/1.0"

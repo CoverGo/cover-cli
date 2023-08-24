@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander'
-import { chalk } from 'zx'
-import { useProductApi } from './src/graph/api/useProductApi.mjs'
-import { useProductMutations, useProductQueries } from './src/graph/useProduct.mjs'
-import { exit } from 'node:process'
-import { error, info, success, warn } from './src/log.mjs'
+import { Command } from "commander"
+import { chalk } from "zx"
+import { useProductApi } from "./src/graph/api/useProductApi.mjs"
+import { useProductMutations, useProductQueries } from "./src/graph/useProduct.mjs"
+import { exit } from "node:process"
+import { error, info, success, warn } from "./src/log.mjs"
 
 const program = new Command()
 
-program.name('covergo graph product-schema')
+program.name("covergo graph product-schema")
 
 program
-	.command('copy')
-	.description('Copy a product schema and product UI schemas with to a new product tree')
-	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
-	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
-	.option('-i, --id <id>', 'Assign this data schema to a different ID from the source.')
-	.argument('<id>', "The product ID to copy.")
+	.command("copy")
+	.description("Copy a product schema and product UI schemas with to a new product tree")
+	.requiredOption("-s, --source <tenant>", "Name of the source tenant.")
+	.requiredOption("-d, --destination <tenant>", "Name of the destination tenant.")
+	.option("-i, --id <id>", "Assign this data schema to a different ID from the source.")
+	.argument("<id>", "The product ID to copy.")
 	.action(async (sourceProductId, options) => {
 		const sourceAlias = options.source
 		const targetAlias = options.destination
@@ -33,7 +33,10 @@ program
 		info(`graph:product-schema:copy`, `Fetch product ${chalk.bold(sourceProductId)} from tenant ${chalk.bold(sourceAlias)}.`)
 		const sourceProduct = await sourceQueries.fetchProduct(sourceProductId)
 
-		info(`graph:product-schema:copy`, `Fetch target product ${chalk.bold(sourceProduct.productTreeId)} from tenant ${chalk.bold(sourceAlias)}.`)
+		info(
+			`graph:product-schema:copy`,
+			`Fetch target product ${chalk.bold(sourceProduct.productTreeId)} from tenant ${chalk.bold(sourceAlias)}.`
+		)
 		const targetProduct = await targetQueries.fetchProduct(targetProductId)
 
 		if (!targetProduct.productTreeId) {
@@ -63,7 +66,10 @@ program
 			}
 		}
 
-		success(`graph:product-schema:copy`, `Product schema ${chalk.bold(sourceProductId)} copied to ${chalk.bold(targetProductId)}.`)
+		success(
+			`graph:product-schema:copy`,
+			`Product schema ${chalk.bold(sourceProductId)} copied to ${chalk.bold(targetProductId)}.`
+		)
 
 		exit(0)
 	})

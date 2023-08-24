@@ -1,5 +1,5 @@
-import axios from 'axios'
-import { print } from 'graphql'
+import axios from "axios"
+import { print } from "graphql"
 
 export function getGraphEndpoint(endpoint) {
 	return `${endpoint}/graphql`
@@ -12,27 +12,20 @@ function getRestEndpoint(endpoint, query) {
 
 export function createRestGetRequest(environment, token) {
 	return async function request(query) {
-		return await axios.get(
-			getRestEndpoint(environment.endpoint, query),
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}
-		)
+		return await axios.get(getRestEndpoint(environment.endpoint, query), {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 	}
 }
 export function createRestPostRequest(environment, token) {
 	return async function request(query, data) {
-		return await axios.post(
-			getRestEndpoint(environment.endpoint, query),
-			data,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}
-		)
+		return await axios.post(getRestEndpoint(environment.endpoint, query), data, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 	}
 }
 
@@ -40,14 +33,10 @@ export function createRequest(environment, token) {
 	return async function request(query, variables = undefined) {
 		const payload = variables ? { query: print(query), variables } : { query: print(query) }
 
-		return await axios.post(
-			getGraphEndpoint(environment.endpoint),
-			payload,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}
-		)
+		return await axios.post(getGraphEndpoint(environment.endpoint), payload, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 	}
 }
