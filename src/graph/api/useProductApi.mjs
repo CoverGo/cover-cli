@@ -318,8 +318,8 @@ export async function useProductApi(alias) {
 		return await request(query, variables)
 	}
 
-	async function fetchProduct(plan, type, version, fecthScripts = false) {
-		const scriptsFragment = fecthScripts
+	async function fetchProduct(plan, type, version, fetchScripts = false) {
+		const scriptsFragment = fetchScripts
 			? `
         externalTableDataUrl
         externalTableDataUrls
