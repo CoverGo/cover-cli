@@ -75,6 +75,9 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 	info(`graph:product:copy`, `Copy scripts.`)
 
 	const scripts = sourceProduct?.scripts ?? []
+	const destinationScripts = destinationProduct?.scripts ?? []
+	const findDestinationScriptByName = (name) => destinationScripts.find(item => item?.name === name)
+
 
 	const productMutations = useProductMutations(await useProductApi(targetAlias))
 	const productQueries = useProductQueries(await useProductApi(sourceAlias))
@@ -86,6 +89,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 	for (const script of scripts) {
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
 		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
+		const foundDestinationScript = findDestinationScriptByName(name)
 
 		if (copyFiles || copyWorksheets) {
 			if (script.externalTableDataUrl && !copiedFiles.includes(script.externalTableDataUrl)) {
@@ -109,13 +113,21 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 				copiedFiles.push(script.referenceSourceCodeUrl)
 			}
 		}
+		
+		if (foundDestinationScript) {
+			const params = {
+				...script,
+				scriptId: foundDestinationScript?.id
+			}
+			await productMutations.updateScript(params)
+		} else {
+			const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
 
-		const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
-
-		const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
-		if (createdScript?.createdStatus?.id) {
-			await productMutations.addScriptToProduct(destinationProduct.productId, createdScript.createdStatus.id)
-			await productMutations.createUiSchema(`script-${createdScript.createdStatus.id}`, schema, { "type": "JSON_SCHEMA" })
+			const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
+			if (createdScript?.createdStatus?.id) {
+				await productMutations.addScriptToProduct(destinationProduct.productId, createdScript.createdStatus.id)
+				await productMutations.createUiSchema(`script-${createdScript.createdStatus.id}`, schema, { "type": "JSON_SCHEMA" })
+			}
 		}
 	}
 }
@@ -203,6 +215,9 @@ program
 
 	.requiredOption('-s, --source <tenant>', 'Name of the source tenant.')
 	.requiredOption('-d, --destination <tenant>', 'Name of the destination tenant.')
+	.option('-f, --files', 'Copy files associated with product. WARNING: Will overwrite files on target.')
+	.option('-w, --worksheets', 'Copy tables associated with product. WARNING: Will overwrite table files on target.')
+	.option('-S, --scripts', 'Copy scripts associated with product. WARNING: Will overwrite script files on target.')
 	.argument('<from>', "The product to sync from.")
 	.argument('<to>', "The product to sync to.")
 
@@ -210,6 +225,9 @@ program
 		try {
 			const sourceAlias = options.source
 			const targetAlias = options.destination
+			const shouldCopyFiles = options.files ?? false
+			const shouldCopyWorksheets = options.worksheets ?? false
+			const shouldCopyScripts = options.scripts ?? false
 
 			const sourceContext = await useProductApi(sourceAlias)
 			const targetContext = await useProductApi(targetAlias)
@@ -229,7 +247,7 @@ program
 			}
 
 			if (product.scripts) {
-				await copyScripts(`graph:product:sync`, sourceAlias, targetAlias, product, destinationProduct)
+				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles, shouldCopyWorksheets, shouldCopyScripts)
 			}
 
 			if (product.productTreeId) {
