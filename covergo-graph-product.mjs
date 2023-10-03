@@ -247,7 +247,7 @@ program
 			}
 
 			if (product.scripts) {
-				await copyScripts(`graph:product:copy`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles, shouldCopyWorksheets, shouldCopyScripts)
+				await copyScripts(`graph:product:sync`, sourceAlias, targetAlias, product, destinationProduct, shouldCopyFiles, shouldCopyWorksheets, shouldCopyScripts)
 			}
 
 			if (product.productTreeId) {
