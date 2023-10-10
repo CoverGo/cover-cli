@@ -442,6 +442,54 @@ export async function useProductApi(alias) {
 
 		return await request(query, variables)
 	}
+	async function updateScript({type, scriptId, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls}) {
+		const query = gql`
+			mutation updateScript(
+				$type: scriptTypeEnum = null,
+				$scriptId: String!
+				$name: String!,
+				$inputSchema: String!,
+				$outputSchema: String!,
+				$sourceCode: String!,
+				$referenceSourceCodeUrl: String = null,
+				$externalTableDataUrl: String = null,
+  			$externalTableDataUrls: [String!]
+			) {
+				updateScript(input: {
+					type: $type,
+					scriptId: $scriptId,
+					name: $name,
+					inputSchema: $inputSchema,
+					outputSchema: $outputSchema,
+					sourceCode: $sourceCode,
+					referenceSourceCodeUrl: $referenceSourceCodeUrl,
+					externalTableDataUrl: $externalTableDataUrl,
+    			externalTableDataUrls: $externalTableDataUrls
+				}) {
+					status
+					errors
+					errors_2 {
+						code
+						message
+					}
+				}
+			}
+		`
+
+		const variables = {
+			type,
+			scriptId,
+			name,
+			inputSchema,
+			outputSchema,
+			sourceCode,
+			referenceSourceCodeUrl,
+			externalTableDataUrl,
+			externalTableDataUrls
+		}
+
+		return await request(query, variables)
+	}
 
 	return {
 		createProduct,
@@ -459,5 +507,6 @@ export async function useProductApi(alias) {
 		fetchProductSchema,
 		fetchAllNodeTypes,
 		createNodeType,
+		updateScript
 	}
 }

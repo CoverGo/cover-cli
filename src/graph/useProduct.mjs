@@ -265,7 +265,18 @@ export const useProductMutations = (apiContext) => {
 		} catch (e) {
 			handleErrorResponse('mutation:createUiSchema', e)
 		}
-	} 
+	}
+
+	async function updateScript(params) {
+		try {
+			const result = await apiContext.updateScript(params)
+			handleApiMessageError('mutation:createUiSchema', result.data)
+
+			return result?.data?.data?.updateScript
+		} catch (e) {
+			handleErrorResponse('mutation:createUiSchema', e)
+		}
+	}
 
 	return {
 		createScript,
@@ -278,5 +289,6 @@ export const useProductMutations = (apiContext) => {
 		createProductDataSchema,
 		createProductUiDataSchema,
 		createNodeTypes,
+		updateScript
 	}
 }
