@@ -90,6 +90,7 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 		info(command, `Copy script ${chalk.bold(script.name)}.`)
 		const { type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls, id } = script
 		const foundDestinationScript = findDestinationScriptByName(name)
+		const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
 
 		if (copyFiles || copyWorksheets) {
 			if (script.externalTableDataUrl && !copiedFiles.includes(script.externalTableDataUrl)) {
@@ -115,14 +116,19 @@ async function copyScripts(command, sourceAlias, targetAlias, sourceProduct, des
 		}
 		
 		if (foundDestinationScript) {
+			const uiSchemaDestination = await productMutations.fetchUiSchemas(`script-${foundDestinationScript?.id}`)
 			const params = {
 				...script,
 				scriptId: foundDestinationScript?.id
 			}
 			await productMutations.updateScript(params)
-		} else {
-			const { schema } = await productQueries.fetchUiSchemas(`script-${id}`)
 
+			const paramsUiSchema = {
+				...uiSchemaDestination,
+				schema
+			}
+			await productMutations.updateUiSchema(paramsUiSchema)
+		} else {
 			const createdScript = await productMutations.createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls)
 			if (createdScript?.createdStatus?.id) {
 				await productMutations.addScriptToProduct(destinationProduct.productId, createdScript.createdStatus.id)
