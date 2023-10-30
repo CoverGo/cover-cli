@@ -146,6 +146,32 @@ export async function useProductApi(alias) {
 
 		return await request(query, variables) 
 	}
+	async function updateUiSchema(variables) {
+		const query = gql`
+			mutation updateUiSchema(
+					$id: String!
+					$name: String!,
+					$schema: String!,
+					$standard: uiSchemaStandardInputGraphType,
+			) {
+				updateUiSchema(input: {
+					id: $id,
+					name: $name,
+					schema: $schema,
+					standard: $standard,
+				}) {
+					status
+					errors
+					errors_2 {
+						code
+						message
+					}
+				}
+			}
+		`
+
+		return await request(query, variables)
+	}
 
 	async function createScript(type, name, inputSchema, outputSchema, sourceCode, referenceSourceCodeUrl, externalTableDataUrl, externalTableDataUrls) {
 		const query = gql`
@@ -507,6 +533,7 @@ export async function useProductApi(alias) {
 		fetchProductSchema,
 		fetchAllNodeTypes,
 		createNodeType,
-		updateScript
+		updateScript,
+		updateUiSchema
 	}
 }
